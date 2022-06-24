@@ -1,0 +1,10 @@
+diff --git a/recipes-kernel/linux/linux-raspberrypi_5.4.bb b/recipes-kernel/linux/linux-raspberrypi_5.4.bb
+index f897f1b..d7f0a81 100644
+--- a/recipes-kernel/linux/linux-raspberrypi_5.4.bb
++++ b/recipes-kernel/linux/linux-raspberrypi_5.4.bb
+@@ -11,4 +11,5 @@ SRC_URI += "file://0001-Revert-selftests-bpf-Skip-perf-hw-events-test-if-the.pat
+             file://0002-Revert-selftests-bpf-Fix-perf_buffer-test-on-systems.patch \
+             file://powersave.cfg \
+             file://android-drivers.cfg \
++            file://container.cfg \
+            "

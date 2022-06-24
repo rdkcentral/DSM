@@ -1,0 +1,13 @@
+diff --git a/recipes-core/packagegroups/packagegroup-rdk-oss-broadband.bbappend b/recipes-core/packagegroups/packagegroup-rdk-oss-broadband.bbappend
+index 124663b..0b839e0 100644
+--- a/recipes-core/packagegroups/packagegroup-rdk-oss-broadband.bbappend
++++ b/recipes-core/packagegroups/packagegroup-rdk-oss-broadband.bbappend
+@@ -1,2 +1,8 @@
+ RDEPENDS_packagegroup-rdk-oss-broadband_remove = " libmtp"
+ 
++DEPENDS += " dobby"
++RDEPENDS_packagegroup-rdk-oss-broadband_append_dunfell = " dobby"
++
++DEPENDS += " dsm"
++RDEPENDS_packagegroup-rdk-oss-broadband_append_dunfell += " dsm"
++
