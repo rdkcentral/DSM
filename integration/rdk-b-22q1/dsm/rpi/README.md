@@ -53,4 +53,11 @@
    # flash the image file
    sudo dd if=../images/rdk-generic-broadband-image-raspberrypi-rdk-broadband.wic of=/dev/sdb1 bs=4M status=progress && sync
 
-* TODO: add a test procedure with the 'dmscli' commands on the Raspberry Pi
+* RdKCentral Documentation
+
+   DSM on RDK-B 2022q1 : RPi Reference Integration
+     https://wiki.rdkcentral.com/display/ASP/DSM+on+RDK-B+2022q1+%3A+RPi+Reference+Integration 
+
+   Testing on the Raspberry Pi Model 3 B++ Target (DSM) 
+     https://wiki.rdkcentral.com/pages/viewpage.action?pageId=213586819 
+
