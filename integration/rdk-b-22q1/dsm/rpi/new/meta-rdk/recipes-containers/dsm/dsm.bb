@@ -19,8 +19,8 @@ SUMMARY = "Downloadable Software Modules"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=c466d4ab8a68655eb1edf0bf8c1a8fb8"
 
-S = "${WORKDIR}/git/dsm"
-SRC_URI= "git://git@gitlab.consult.red:/dave.chapman/rdk-smart-router.git;protocol=ssh;branch=sprint-002"
+S = "${WORKDIR}/git"
+SRC_URI= "git://git@github.com:rdkcentral/DSM.git;protocol=ssh;branch=main"
 
-SRCREV = "c42806ea1734768ab6e3ec8e1e6a68e86de02255"
+SRCREV = "c459281ab4b0a89fc79dc6334a2e1152e40c18c7"
 inherit pkgconfig cmake
