@@ -122,7 +122,7 @@ if [ ! "$3" == "" ]; then
 fi
 
 echo "====>>>"
-echo "patch file : $patch_dir/$(ls $patch_dir)"
+echo "patching : $2/$1"
 
 if  [ -f $patch_dir/$(basename $1).patch ]; then
 	echo "patching $2/$1 from $patch_file"
