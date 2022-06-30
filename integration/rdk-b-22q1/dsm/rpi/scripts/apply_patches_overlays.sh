@@ -21,11 +21,97 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+function remove_patch(){
+#@description   Removes any patch which has been applied in the target directory path
+#@param[in]     $1      relative file path name
+#@param[in]     $2      target file directory path
+#@param[in]     $3      patch files directory path [NB: default is "."]
+
+patch_dir=.
+if [ ! "$3" == "" ]; then
+    patch_dir=$3/$(dirname $1)
+fi
+
+echo "====>>> ** REMOVE PATCH/NEW **"
+echo "patch file : $patch_dir/$(ls $patch_dir)"
+echo "target file : $2/$1"
+
+if [ -f $patch_dir/$(basename $1).patch ]; then
+
+    # strip off any leading ./
+    file=$2/$1
+    if [ "${file:0:1}" == "." ]; then
+        file=$(echo "$file" | awk '{ print substr ($0, 3 ) }')
+    fi
+
+    # obtain the first leaf of the directory path
+    git_file=${file#*/}
+    git_repo=${file%"$git_file"}
+
+    echo "git_repo='$git_repo'"
+    echo "git_file='$git_file'"
+
+    src=$(pwd)
+
+    # remove a patch
+    cd $git_repo
+    git checkout $git_file
+
+    if [ -f ${git_file}.orig ]; then
+        rm ${git_file}.orig
+    fi
+
+    if [ -f ${git_file}.rej ]; then
+        rm ${git_file}.rej
+    fi
+
+    git log -1 $git_file
+
+    cd $src
+
+    ls -l $2/$1*
+    ls -l $patch_dir/$(basename $1).patch
+
+elif [ -f $patch_dir/$(basename $1) ]; then
+
+    target_file="$2/$1"
+    if [ -f $target_file ]; then
+
+        # remove a target file
+        rm "$2/$1"
+
+        echo "New: $(ls ${patch_dir}/$(basename $1))"
+        echo "New removed from target: $target_file"
+
+        if [ -f $target_file ]; then
+            echo "**** Error ! **** : expected new target file to not exist $target_file"
+            exit 6
+        fi
+
+    else
+        echo "New: $(ls ${patch_dir}/$(basename $1))"
+        echo "New already removed from target: $target_file"
+
+    fi
+
+else
+    echo "**** Error ! **** : no patch/new file provided for $1 in directory $2"
+    exit 7
+fi
+
+echo "====<<<"
+}
+
 function apply_patch(){
 #@description   Applies a patch file, using the 'patch' command given a relative path file name, to the corresponding file in the target directory path
 #@param[in]     $1      relative file path name
 #@param[in]     $2      target file directory path
 #@param[in]     $3      patch files directory path [NB: default is "."]
+
+if [ ! "$remove_patches" == "" ]; then
+    remove_patch $1 $2 $3
+    return
+fi
 
 patch_dir=.
 if [ ! "$3" == "" ]; then
@@ -46,18 +132,17 @@ elif [ -f $patch_dir/$(basename $1) ]; then
 
 else
 	echo "**** Error ! **** : patch/new file does not exist for $2/$1"
-	exit 1
+	exit 3
 fi
 
-file=$1
 if [ -f $patch_dir/$(basename $1).patch ]; then
 
     # apply a patch
     patch -u -b $2/$1 -i $patch_dir/$(basename $1).patch
-    ls -l $2/$1
+    ls -l $2/$1*
     ls -l $patch_dir/$(basename $1).patch
 
-else
+elif [ -f $patch_dir/$(basename $1) ]; then
 
     target_file="$2/$1"
     if [ -f $target_file ]; then
@@ -84,6 +169,10 @@ else
         echo "**** Error ! **** : expected new target file to exist $target_file"
         exit 4
     fi
+
+else
+    echo "**** Error ! **** : no patch/new file provided for $1 in directory $2"
+    exit 5
 
 fi
 
