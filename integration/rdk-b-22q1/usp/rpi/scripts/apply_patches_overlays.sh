@@ -103,7 +103,7 @@ echo "====<<<"
 }
 
 function apply_patch(){
-#@description   Applies a patch file, using the 'patch' command given a relative path file name, to the corresponding file in the target directory path
+#@description   Applies a patch file, using the 'patch' command give a relative path file name, to the corresponding file in the target directory path
 #@param[in]     $1      relative file path name
 #@param[in]     $2      target file directory path
 #@param[in]     $3      patch files directory path [NB: default is "."]
@@ -139,6 +139,7 @@ if [ -f $patch_dir/$(basename $1).patch ]; then
 
     # apply a patch
     patch -u -b $2/$1 -i $patch_dir/$(basename $1).patch
+
     ls -l $2/$1*
     ls -l $patch_dir/$(basename $1).patch
 
