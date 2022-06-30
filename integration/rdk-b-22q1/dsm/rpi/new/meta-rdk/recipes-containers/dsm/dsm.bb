@@ -20,7 +20,7 @@ LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=c466d4ab8a68655eb1edf0bf8c1a8fb8"
 
 S = "${WORKDIR}/git"
-SRC_URI= "git://git@github.com:rdkcentral/DSM.git;protocol=ssh;branch=main"
+SRC_URI= "git://git@github.com/rdkcentral/DSM;protocol=ssh;branch=main"
 
 SRCREV = "c459281ab4b0a89fc79dc6334a2e1152e40c18c7"
 inherit pkgconfig cmake
