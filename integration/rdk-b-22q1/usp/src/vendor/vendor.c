@@ -70,6 +70,11 @@
 #include "usp_api.h"
 #include "text_utils.h"
 
+#define INCLUDE_LCM_DATAMODEL
+
+#ifdef    INCLUDE_LCM_DATAMODEL
+#include "lcm_datamodel.c"
+#endif
 
 //-------------------------------------------------------------------------------------------------
 // Handle for connection to DBus
@@ -149,232 +154,6 @@ void rdk_free(void *ptr);
 ** \return  USP_ERR_OK if successful
 **
 **************************************************************************/
-
-#define VENDOR_LCM_HACKS
-
-#ifdef  VENDOR_LCM_HACKS
-
-// Number of elements in an array
-#define NUM_ELEM(x) (sizeof((x)) / sizeof((x)[0]))
-
-#define LCM_ROOT "Device.SoftwareModules"
-#define LCM_EE_ROOT LCM_ROOT ".ExecEnv"
-
-#include <string.h>
-#include <stdio.h>
-// FILE *popen(const char *command, const char *mode); 
-
-static int LCM_execCommand(char *command,char *buf,int len)
-{
-    int err = USP_ERR_INVALID_COMMAND_ARGS;
-
-    memset(buf,0,len);
-
-    FILE *comm  = popen(command,"r");
-    char *write = buf;
-    int   remaining = len;
-
-    if (comm != (FILE *)NULL)
-    {
-        // Read return until no more chars
-        while(buf != NULL && !feof(comm))
-        {
-            size_t r = fread(write,sizeof(char),remaining,comm);
-            write += r;
-            remaining -= r;
-        }
-
-        fclose(comm);
-        
-        err = USP_ERR_OK;
-    }
-
-    return err;
-}
-
-static int LCM_execDSMCLI(dm_req_t *req, char *buf, int len)
-{
-    return LCM_execCommand("dsmcli",buf,len);
-}
-
-#if 0
-static int GetModelNumber(dm_req_t *req, char *buf, int len)
-{
-    strncpy(buf, "VeryStrinky", len);
-    
-    return USP_ERR_OK;
-}
-#endif
-
-// Device.SoftwareModules. = Object
-
-// Device.SoftwareModules.ExecEnvNumberOfEntries
-// Device.SoftwareModules.DeploymentUnitNumberOfEntries = 
-// Device.SoftwareModules.ExecutionUnitNumberOfEntries =
-
-// Device.SoftwareModules.ExecEnv.{i}. = Object
-
-// Device.SoftwareModules.ExecEnv.{i}.Enable = true
-// Device.SoftwareModules.ExecEnv.{i}.Status = Up
-// Device.SoftwareModules.ExecEnv.{i}.Name   = root
-
-// Device.SoftwareModules.InstallDU (URL,UUID,EERef)
-
-// Device.SoftwareModules.DeploymentUnit.{i}. = Object
-// Device.SoftwareModules.Uninstall() = Method
-
-// Device.SoftwareModules.DeploymentUnit.{i}.Name =
-// Device.SoftwareModules.DeploymentUnit.{i}.Status = (Installed/Uninstalled)
-// Device.SoftwareModules.DeploymentUnit.{i}.URL = 
-// Device.SoftwareModules.DeploymentUnit.{i}.DUID = (assigned by dev)
-// Device.SoftwareModules.DeploymentUnit.{i}.UUID = (from install call)
-
-// Device.SoftwareModules.ExecutionUnit.{i}. = Object
-// Device.SoftwareModules.ExecutionUnit.{i}.SetRequestedState(Status = "Active|Idle") = Method
-
-// Device.SoftwareModules.ExecutionUnit.{i}.Name = (Same as the DU, 1 to 1 mapping)
-// Device.SoftwareModules.ExecutionUnit.{i}.Status = (active/idle)
-
-static char *LCM_OP_InstallDU_inputArgs[] =
-{
-    "URL",
-    "UUID",
-    "ExecutionEnvRef",
-};
-
-static int LCM_OP_InstallDU(dm_req_t *req, char *command_key, kv_vector_t *input_args, kv_vector_t *output_args)
-{
-    int  err = USP_ERR_INVALID_ARGUMENTS;
-
-    char command[1024];
-    char out[1024];
-
-    // Ensure that no output arguments are returned for this sync operation
-    USP_ARG_Init(output_args);
-
-    char *URL   = USP_ARG_Get(input_args,"URL",NULL);
-    char *UUID  = USP_ARG_Get(input_args,"UUID",NULL);
-    char *EEREF = USP_ARG_Get(input_args,"ExecutionEnvRef",NULL);
-
-    if (URL != NULL && UUID != NULL && EEREF != NULL)
-    {
-        memset(command,0,sizeof(command));
-        memset(out,0,sizeof(out));
-
-        snprintf(command,sizeof(command),"dsmcli install test %s",URL);
-        fprintf(stdout,"LCM: %s\n",command);
-
-        err = LCM_execCommand(command,out,sizeof(out));
-        fprintf(stdout,"LCM: dsmcli says (%d) (%s)\n",err,out);
-    }
-
-    return err;
-}
-
-static char *LCM_OP_UninstallDU_inputArgs[] =
-{
-    "UUID",
-};
-
-static int LCM_OP_UninstallDU(dm_req_t *req, char *command_key, kv_vector_t *input_args, kv_vector_t *output_args)
-{
-    int  err = USP_ERR_INVALID_ARGUMENTS;
-
-    char command[1024];
-    char out[1024];
-
-    // Ensure that no output arguments are returned for this sync operation
-    USP_ARG_Init(output_args);
-
-    char *UUID = USP_ARG_Get(input_args,"UUID",NULL);
-
-    if (UUID != NULL)
-    {
-        memset(command,0,sizeof(command));
-        memset(out,0,sizeof(out));
-
-        snprintf(command,sizeof(command),"dsmcli uninstall %s",UUID);
-        fprintf(stdout,"LCM: %s\n",command);
-
-        err = LCM_execCommand(command,out,sizeof(out));
-        fprintf(stdout,"LCM: dsmcli says (%d) (%s)\n",err,out);
-    }
-
-    return err;
-}
-
-static char *LCM_OP_SetRequestedState_inputArgs[] =
-{
-    "EU",
-    "Status",
-};
-
-static int LCM_OP_SetRequestedState(dm_req_t *req, char *command_key, kv_vector_t *input_args, kv_vector_t *output_args)
-{
-    int err = USP_ERR_INVALID_ARGUMENTS;
-
-    char command[1024]; 
-    char out[1024];
-
-    // Ensure that no output arguments are returned for this sync operation
-    USP_ARG_Init(output_args);
-
-    char *EU     = USP_ARG_Get(input_args,"EU",NULL);
-    char *Status = USP_ARG_Get(input_args,"Status",NULL);
-    
-    if (EU != NULL && Status != NULL)
-    {
-        memset(command,0,sizeof(command));
-        memset(out,0,sizeof(out));
-
-        if      (strcmp(Status,"Active") == 0)
-        {
-            // Active
-            snprintf(command,sizeof(command),"dsmcli start-eu test %s %s",EU,EU);
-            fprintf(stdout,"LCM: %s\n",command);
-
-            err = LCM_execCommand(command,out,sizeof(out));
-            fprintf(stdout,"LCM: dsmcli says (%d) (%s)\n",err,out);
-        }
-        else if (strcmp(Status,"Idle") == 0)
-        {
-            // Idle
-            snprintf(command,sizeof(command),"dsmcli stop-eu test %s",EU);
-            fprintf(stdout,"LCM: %s\n",command);
-
-            err = LCM_execCommand(command,out,sizeof(out));
-            fprintf(stdout,"LCM: dsmcli says (%d) (%s)\n",err,out);
-        }
-    }
-
-    return err;
-}
-
-void LCM_RegisterDataModel(void)
-{
-    // int USP_REGISTER_Param_NumEntries(char *path, char *table_path);
-
-    // Device.SofwtareModules.dsmcli (Test dsmcli connection)
-    USP_REGISTER_VendorParam_ReadOnly("Device.SoftwareModules.dsmcli",LCM_execDSMCLI,DM_STRING);
-
-    // Device.SoftwareModules.InstallDU()
-    USP_REGISTER_SyncOperation     ("Device.SoftwareModules.InstallDU()",LCM_OP_InstallDU);
-    USP_REGISTER_OperationArguments("Device.SoftwareModules.InstallDU()",
-        LCM_OP_InstallDU_inputArgs,NUM_ELEM(LCM_OP_InstallDU_inputArgs),NULL,0);
-
-    // Device.SoftwareModules.DU.Uninstall()
-    USP_REGISTER_SyncOperation     ("Device.SoftwareModules.DU.Uninstall()",LCM_OP_UninstallDU);
-    USP_REGISTER_OperationArguments("Device.SoftwareModules.DU.Uninstall()",
-        LCM_OP_UninstallDU_inputArgs,NUM_ELEM(LCM_OP_UninstallDU_inputArgs),NULL,0);
-
-    // Device.SoftwareModules.EU.SetRequestedState()
-    USP_REGISTER_SyncOperation     ("Device.SoftwareModules.EU.SetRequestedState()",LCM_OP_SetRequestedState);
-    USP_REGISTER_OperationArguments("Device.SoftwareModules.EU.SetRequestedState()",
-        LCM_OP_SetRequestedState_inputArgs,NUM_ELEM(LCM_OP_InstallDU_inputArgs),NULL,0);
-}
-
-#endif // #ifdef  VENDOR_LCM_HACKS
-
 int VENDOR_Init(void)
 {
     int i;
@@ -382,7 +161,7 @@ int VENDOR_Init(void)
     vendor_hook_cb_t core_callbacks;
     int ccsp_err;
     struct stat info;
-    
+
     // Exit if unable to connect to the RDK message bus
     // NOTE: We do this here, rather than in VENDOR_Start() because the SerialNumber, ManufacturerOUI and SoftwareVersion are cached before CCSP_USP_PA_Start() is called
     ccsp_err = CCSP_Message_Bus_Init((char*)USPPA_COMPONENT_NAME, (char*)CONF_FILENAME, &bus_handle, rdk_malloc, rdk_free);
@@ -475,10 +254,10 @@ int VENDOR_Init(void)
         return err;
     }
 
-#ifdef VENDOR_LCM_HACKS
-    LCM_RegisterDataModel();
+#ifdef INCLUDE_LCM_DATAMODEL
+    LCM_VENDOR_Init();
 #endif
-    
+
     return USP_ERR_OK;
 }
 
@@ -498,6 +277,10 @@ int VENDOR_Init(void)
 **************************************************************************/
 int VENDOR_Start(void)
 {
+#ifdef INCLUDE_LCM_DATAMODEL
+    LCM_VENDOR_Start();
+#endif
+
     return USP_ERR_OK;
 }
 
@@ -521,6 +304,10 @@ int VENDOR_Stop(void)
         CCSP_Message_Bus_Exit(bus_handle);
         bus_handle = NULL;
     }
+
+#ifdef INCLUDE_LCM_DATAMODEL
+    LCM_VENDOR_Stop();
+#endif
 
     return USP_ERR_OK;
 }
