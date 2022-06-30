@@ -70,9 +70,9 @@ else
         exit 3
     fi
 
-    if [ ! -d $2/$(basename $1) ]; then
-        mkdir -p $2/$(basename $1)
-        echo "**** Status ! **** : created target directory $2/$(basename $1)"
+    if [ ! -d $2/$(dirname $1) ]; then
+        mkdir -p $2/$(dirname $1)
+        echo "**** Status ! **** : created target directory $2/$(dirname $1)"
     fi
 
     #copy the file which does not yet exist in the target directory
