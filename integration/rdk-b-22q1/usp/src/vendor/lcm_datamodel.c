@@ -1,5 +1,3 @@
-#ifndef __LCM_DATAMODEL_C__
-#define __LCM_DATAMODEL_C__
 
 // If not stated otherwise in this file or this component's license file the
 // following copyright and licenses apply:
@@ -18,14 +16,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef __LCM_DATAMODEL_C__
+#define __LCM_DATAMODEL_C__
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
-// #include "usp_err_codes.h"
-// #include "vendor_defs.h"
-// #include "vendor_api.h"
-// #include "usp_api.h"
+#include "usp_err_codes.h"
+#include "vendor_defs.h"
+#include "vendor_api.h"
+#include "usp_api.h"
 
 // Number of elements in an array
 #define NUM_ELEM(x) (sizeof((x)) / sizeof((x)[0]))
@@ -70,8 +71,6 @@ static bool LCM_popCached(char *command,char *buf,size_t len)
 
     LCM_CacheInit();
 
-    fprintf(stdout,"Looking for cached %s\n",command);
-
     for (i=0;i<LCM_CacheCount;i++)
     {
         if (strcmp(command,LCM_Cache[i].command) == 0)
@@ -81,24 +80,19 @@ static bool LCM_popCached(char *command,char *buf,size_t len)
             gettimeofday(&(now),NULL);
             // Check time stamp is new enough
 
-            fprintf(stdout,"Now %d Was %d\n",(int)(now.tv_sec),(int)(LCM_Cache[i].tv.tv_sec));
-
             if (now.tv_sec < LCM_Cache[i].tv.tv_sec + 3)
             {
-                fprintf(stdout,"Using cached version of %s",command);
+                // Use cache
                 strncpy(buf,LCM_Cache[i].result,len);
-
                 return true;
             }
             else
             {
-                fprintf(stdout,"Cached version too old, replace\n");
+                // Too old, get new and replace
                 return false;
             }
         }
     }
-
-    fprintf(stdout,"Not founds\n");
 
     return false;
 }
@@ -110,15 +104,13 @@ static void LCM_pushCached(char *command,char *result)
 
     LCM_CacheInit();
 
-    fprintf(stdout,"Pushing cached: command=%s, result=%s\n",command,result);
-
     for (i=0;i<LCM_CacheCount;i++)
     {
         if (strcmp(command,LCM_Cache[i].command) == 0)
         {
-            fprintf(stdout,"Replacing existing\n");
-            // Found so replace and update timestamp
+            // Replace existing
             strncpy(LCM_Cache[i].result,result,sizeof(LCM_Cache[i].result));
+
             gettimeofday(&(LCM_Cache[LCM_CacheCount].tv),NULL);  
 
             return;
@@ -128,24 +120,21 @@ static void LCM_pushCached(char *command,char *result)
     // Not found, insert new
     if (LCM_CacheCount < LCM_CACHE_SIZE)
     {
-        // Space for more, add on to the end
-        fprintf(stdout,"New cache entry\n");
-
         strncpy(LCM_Cache[LCM_CacheCount].command,command,sizeof(LCM_Cache[LCM_CacheCount].command));
         strncpy(LCM_Cache[LCM_CacheCount].result ,result, sizeof(LCM_Cache[LCM_CacheCount].result));
+
         gettimeofday(&(LCM_Cache[LCM_CacheCount].tv),NULL);
 
         LCM_CacheCount++;
     }
     else
     {
-        fprintf(stdout,"Random replace\n");
-
         // Pick cache entry at random and replace, assume rand is seeded and RAND_MAX > CACHE_SIZE
         int pick = rand() % LCM_CACHE_SIZE;
 
         strncpy(LCM_Cache[pick].command,command,sizeof(LCM_Cache[pick].command));
         strncpy(LCM_Cache[pick].result ,result, sizeof(LCM_Cache[pick].result));
+
         gettimeofday(&(LCM_Cache[LCM_CacheCount].tv),NULL);       
     }
 }
@@ -177,13 +166,9 @@ static int LCM_execCommand(char *command,char *buf,int len,bool cached)
         }
     }
 
-    fprintf(stdout,"Popen=%s\n",command);
-
     FILE *comm  = popen(command,"r");
     char *write = buf;
     int   remaining = len;
-
-    fprintf(stdout,"Pipe is open %p\n",comm);
 
     if (comm != (FILE *)NULL)
     {
@@ -196,8 +181,6 @@ static int LCM_execCommand(char *command,char *buf,int len,bool cached)
         }
 
         fclose(comm);
-        
-        fprintf(stdout,"Pipe closed\n");
 
         err = USP_ERR_OK;
 
@@ -220,8 +203,6 @@ static int LCM_getIndexFromPath(char *path)
 
     int first=-1,second=-1;
     int i = 0;
-
-    fprintf(stdout,"Index from path %s\n",path);
 
     // Device.SoftwareModules.DeploymentUnit.1.Status, for example
     // Find last pair of ., index = chars between converted to int
@@ -247,8 +228,6 @@ static int LCM_getIndexFromPath(char *path)
         i++;
     }
 
-    fprintf(stdout,"First = %d, Second = %d\n",first,second);
-
     if (first >= 0 && second > first)
     {
         memset(buf,0,sizeof(buf));
@@ -260,7 +239,7 @@ static int LCM_getIndexFromPath(char *path)
             buf[i] = path[j];
             i++;
 
-            if (i>=15) break;
+            if (i>=sizeof(buf)-1) break;
         }
 
         index = atoi(buf);
@@ -281,8 +260,6 @@ static int LCM_DSMCLI_parseTag(char *in,char *tag,char openC,char closeC,char *b
     int  inLength = strlen(in);
 
     int i,j,k;
-
-    printf("in=%s, tag=%s, inL=%d, tagL=%d\n",in,tag,inLength,tagLength);
 
     for (i=0;i<inLength-tagLength;i++)
     {
@@ -405,7 +382,6 @@ static int LCM_ExecEnv_Status(dm_req_t *req, char *buf, int len)
     // Up, Error, Disabled
     snprintf(buf,len,"Up");
     
-    fprintf(stdout,"Path = %s\n",req->path);
     return USP_ERR_OK;
 }
 
@@ -597,9 +573,7 @@ static int LCM_DSM_getDUPropertyTag(dm_req_t *req,char *tag,char *buf,size_t len
     char duList[2048];
     int index;
 
-    fprintf(stdout,"Status request on path %s",req->path);
     index = LCM_getIndexFromPath(req->path);
-    fprintf(stdout,"Index = %d\n",index);
 
     snprintf(buf,len,"Unknown");
     
@@ -617,8 +591,6 @@ static int LCM_DSM_getDUPropertyTag(dm_req_t *req,char *tag,char *buf,size_t len
         {
             char url[1024];
 
-            fprintf(stdout,"Found duList URL Vector %s\n",urlVector);
-
             err = LCM_DSMCLI_parseVectorIndex(urlVector,index,url,sizeof(url));
 
             if (err == USP_ERR_OK)
@@ -626,7 +598,6 @@ static int LCM_DSM_getDUPropertyTag(dm_req_t *req,char *tag,char *buf,size_t len
                 char comm[2048];
                 char info[2048];
 
-                fprintf(stdout,"Url = %s\n",url);
                 snprintf(comm,sizeof(comm),"dsmcli du.detail %s",url);
 
                 err = LCM_execCommand(comm,info,sizeof(info),true);
@@ -635,40 +606,22 @@ static int LCM_DSM_getDUPropertyTag(dm_req_t *req,char *tag,char *buf,size_t len
                 {
                     char props[2048];
 
-                    fprintf(stdout,"Info=%s\n",info);
-
                     err = LCM_DSMCLI_parseTag(info,"\"result\":",'{','}',props,sizeof(props));
 
                     if (err == USP_ERR_OK)
                     {
-                        fprintf(stdout,"Props = %s\n",props);
-
                         // And finally!
-                        err = LCM_DSMCLI_parseTag(props,tag,'"','"',buf,len);
+                        // No error if property not found, use default (e.g. for DU when uninstalled and no eu available)
+                        /* err = */ LCM_DSMCLI_parseTag(props,tag,'"','"',buf,len);
                     }
                 }
             }
         }
     }
 
-    // Vector element (index), URL
-    // dsmcli du.info (cached)
-    // property(status)
-    // MAP
-
     return err;
 
 }
-
-// dsm du info properties:
-
-// "parent-ee":"test","state":"Installed"
-// "URI":"http://127.0.0.1/packages/x86-64/sleepy1.tar",
-// "UUID":"http://127.0.0.1/packages/x86-64/sleepy1.tar",
-// "eu":"9K",
-// "eu.path":"/home/dave/Work/RDKCentral/DSM/testing/destination/sleepy1",
-// "parent-ee":"test",
-// "state":"Installed", tag="state"
 
 static int LCM_DeploymentUnit_UUID(dm_req_t *req, char *buf, int len)   { return LCM_DSM_getDUPropertyTag(req,"\"UUID\":",buf,len); }
 static int LCM_DeploymentUnit_DUID(dm_req_t *req, char *buf, int len)   { return LCM_DSM_getDUPropertyTag(req,"\"UUID\":",buf,len); }
@@ -764,8 +717,6 @@ static int LCM_DeploymentUnit_Uninstall(dm_req_t *req, char *command_key, kv_vec
         err = LCM_execCommand(comm,NULL,0,false);
     }
 
-    fprintf(stdout,"Returning from uninstall %d\n",err);
-
     return err;
 }
 
@@ -844,9 +795,7 @@ static int LCM_DSM_getEUPropertyTag(dm_req_t *req,char *tag,char *buf,size_t len
     char euList[2048];
     int index;
 
-    fprintf(stdout,"Status request on path %s",req->path);
     index = LCM_getIndexFromPath(req->path);
-    fprintf(stdout,"Index = %d\n",index);
 
     snprintf(buf,len,"Unknown");
     
@@ -864,8 +813,6 @@ static int LCM_DSM_getEUPropertyTag(dm_req_t *req,char *tag,char *buf,size_t len
         {
             char id[1024];
 
-            fprintf(stdout,"Found euList ID Vector %s\n",idVector);
-
             err = LCM_DSMCLI_parseVectorIndex(idVector,index,id,sizeof(id));
 
             if (err == USP_ERR_OK)
@@ -873,7 +820,6 @@ static int LCM_DSM_getEUPropertyTag(dm_req_t *req,char *tag,char *buf,size_t len
                 char comm[2048];
                 char info[2048];
 
-                fprintf(stdout,"id = %s\n",id);
                 snprintf(comm,sizeof(comm),"dsmcli eu.detail %s",id);
 
                 err = LCM_execCommand(comm,info,sizeof(info),true);
@@ -882,14 +828,10 @@ static int LCM_DSM_getEUPropertyTag(dm_req_t *req,char *tag,char *buf,size_t len
                 {
                     char props[2048];
 
-                    fprintf(stdout,"Info=%s\n",info);
-
                     err = LCM_DSMCLI_parseTag(info,"\"result\":",'{','}',props,sizeof(props));
 
                     if (err == USP_ERR_OK)
                     {
-                        fprintf(stdout,"Eu Props = %s\n",props);
-
                         // And finally!
                         err = LCM_DSMCLI_parseTag(props,tag,'"','"',buf,len);
                     }
@@ -900,9 +842,6 @@ static int LCM_DSM_getEUPropertyTag(dm_req_t *req,char *tag,char *buf,size_t len
 
     return err;
 }
-
-// EU detail
-// {"du":"http://127.0.0.1/packages/x86-64/sleepy1.tar","ee":"test","path":"/home/dave/Work/RDKCentral/DSM/testing/destination/sleepy1","status":"Idle","uid":"9K"}}
 
 static int LCM_ExecutionUnit_EUID(dm_req_t *req, char *buf, int len)         { return LCM_DSM_getEUPropertyTag(req,"\"uid\":"     ,buf,len); }
 
@@ -1035,8 +974,7 @@ static int LCM_ExecutionUnit_SetRequestedState(dm_req_t *req, char *command_key,
         {
             char euList[1024];
 
-            // Get execution unit vector
-                // dsmcli du.list (cached)
+            // Get execution unit vector, dsmcli du.list (cached)
             err = LCM_execCommand("dsmcli eu.list",euList,sizeof(euList),true);
 
             if (err == USP_ERR_OK)
@@ -1050,14 +988,11 @@ static int LCM_ExecutionUnit_SetRequestedState(dm_req_t *req, char *command_key,
                 {
                     char id[1024];
 
-                    fprintf(stdout,"Found euList ID Vector %s\n",idVector);
                     err = LCM_DSMCLI_parseVectorIndex(idVector,index,id,sizeof(id));
 
                     if (err == USP_ERR_OK)
                     {
                         char comm[2048];
-
-                        fprintf(stdout,"id = %s Status = %s\n",id,Status);
 
                         if      (strcmp(Status,"Active") == 0)
                         {
@@ -1194,34 +1129,6 @@ static void LCM_Register_InstallDU(void)
 
 }
 
-#if 0 // For future use
-
-// DSMCLI parsing utils (cheap JSON equiv!)
-static int LCM_DSMCLI_parseResponse(char *in,char *out,size_t outSize)
-{
-    int length = 0;
-    int i = 0;
-
-    memset(out,0,outSize);
-
-    length = strlen(in);
-
-    // For for chars in sequence, response: se:<space>
-    while(i<length-3)
-    {
-        if (in[i] == 'e' && in[i+1] == ':' && in[i+2] == ' ')
-        {
-            // Found
-            strncpy(out,&(in[i+3]),outSize);
-            return 0;
-        }
-    }
-
-    return -1;
-}
-
-#endif
-
 static int LCM_DSMCLI_countChars(char *in,char toCount)
 {
     int count = 0;
@@ -1290,9 +1197,6 @@ static int   LCM_DU_monitorCountDUs(char *buf)
     return commaCount;
 }
 
-// int USP_SIGNAL_ObjectAdded(char *path);
-// int USP_SIGNAL_ObjectDeleted(char *path);
-
 static void *LCM_DU_monitorThread(void *arg)
 {
     int err;
@@ -1307,7 +1211,6 @@ static void *LCM_DU_monitorThread(void *arg)
     // Keep trying until we get a first response
     do
     {
-        /* code */
         err = LCM_execCommand("dsmcli du.list",buf,sizeof(buf),false);
 
         if (err == USP_ERR_OK && strlen(buf) > 50) // If there's real data response is longer than 50 chars (trust me!)
@@ -1319,7 +1222,6 @@ static void *LCM_DU_monitorThread(void *arg)
                 for (i=0;i<count;i++)
                 {
                     snprintf(object,sizeof(object),DEV_SM_ROOT "DeploymentUnit.%d",i+1);
-                    fprintf(stdout,"Signal add on %s\n",object);
                     USP_SIGNAL_ObjectAdded(object);
                 }
 
@@ -1328,9 +1230,7 @@ static void *LCM_DU_monitorThread(void *arg)
         }
         else
         {
-            fprintf(stdout,"DU list retry\n");
             usleep(2 * 1000 * 1000);
-
             err = -1;
         }
     } while (err != USP_ERR_OK);
@@ -1350,8 +1250,6 @@ static void *LCM_DU_monitorThread(void *arg)
             {
                 // New count
                 snprintf(object,sizeof(object),DEV_SM_ROOT "DeploymentUnit.%d",newCount);
-                fprintf(stdout,"Signal add on %s\n",object);
-
                 USP_SIGNAL_ObjectAdded(object);
             }
 
@@ -1359,16 +1257,10 @@ static void *LCM_DU_monitorThread(void *arg)
             {
                 // Remove old count
                 snprintf(object,sizeof(object),DEV_SM_ROOT "DeploymentUnit.%d",duCount);
-                fprintf(stdout,"Signal delete on %s\n",object);
-
                 USP_SIGNAL_ObjectDeleted(object);
             }
 
             duCount = newCount;
-        }
-        else
-        {
-            fprintf(stdout,"DU monitor command failed\n");
         }
     }
 
@@ -1416,8 +1308,6 @@ static void *LCM_EU_monitorThread(void *arg)
         else
         {
             usleep(2 * 1000 * 1000);
-            fprintf(stdout,"EU list retry\n");
-
             err = -1;
         }
     } while (err != USP_ERR_OK);
@@ -1431,14 +1321,10 @@ static void *LCM_EU_monitorThread(void *arg)
         {
             int newCount = LCM_EU_monitorCountEUs(buf);
 
-            // fprintf(stdout,"NUMBER OF DUS=%d\n",duCount);
-
             if (euCount == newCount - 1)
             {
                 // New count
                 snprintf(object,sizeof(object),DEV_SM_ROOT "ExecutionUnit.%d",newCount);
-                // fprintf(stdout,"Signal add on %s\n",object);
-
                 USP_SIGNAL_ObjectAdded(object);
             }
 
@@ -1446,24 +1332,18 @@ static void *LCM_EU_monitorThread(void *arg)
             {
                 // Remove old count
                 snprintf(object,sizeof(object),DEV_SM_ROOT "ExecutionUnit.%d",euCount);
-                // fprintf(stdout,"Signal delete on %s\n",object);
-
                 USP_SIGNAL_ObjectDeleted(object);
             }
 
             euCount = newCount;
-        }
-        else
-        {
-            fprintf(stdout,"EU monitor command failed\n");
         }
     }
 
     return NULL;
 }
 
-static pthread_t duMonitorTID;
-static pthread_t euMonitorTID;
+static pthread_t duMonitorTID; // DUs monitor thread
+static pthread_t euMonitorTID; // EUs monitor thread
 
 static void LCM_RegisterDataModel(void)
 {
@@ -1506,6 +1386,5 @@ static int LCM_VENDOR_Stop(void)
     // Stop threads here!
     return USP_ERR_OK;
 }
-
 
 #endif // #ifndef __LCM_DATAMODEL_C__
