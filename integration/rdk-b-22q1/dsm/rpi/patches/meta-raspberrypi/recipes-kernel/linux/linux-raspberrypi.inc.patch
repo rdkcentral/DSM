@@ -1,0 +1,12 @@
+diff --git a/recipes-kernel/linux/linux-raspberrypi.inc b/recipes-kernel/linux/linux-raspberrypi.inc
+index 3219a23..380c572 100644
+--- a/recipes-kernel/linux/linux-raspberrypi.inc
++++ b/recipes-kernel/linux/linux-raspberrypi.inc
+@@ -39,6 +39,7 @@ CMDLINE_append += ' ${@oe.utils.conditional("DISABLE_RPI_BOOT_LOGO", "1", "logo.
+ # to enable kernel debugging.
+ CMDLINE_DEBUG ?= ""
+ CMDLINE_append = " ${CMDLINE_DEBUG}"
++CMDLINE_append = "cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1"
+ 
+ KERNEL_MODULE_AUTOLOAD += "${@bb.utils.contains("MACHINE_FEATURES", "pitft28r", "stmpe-ts", "", d)}"
+ 
