@@ -8,7 +8,7 @@
    # initialize the repo tool
    repo init -u https://code.rdkcentral.com/r/rdkcmf/manifests -m rdkb-extsrc.xml -b rdkb-2021q4-dunfell
   
-   # obtain the source code suing the "repo" tool 
+   # obtain the source code using the "repo" tool 
    repo sync -j `nproc` --no-clone-bundle --no-tags
  
    # configure to build a Raspberry Pi image
@@ -61,3 +61,5 @@
    Testing on the Raspberry Pi Model 3 B++ Target (DSM) 
      https://wiki.rdkcentral.com/pages/viewpage.action?pageId=213586819 
 
+   USP-PA on RDK-B 2022q1 : RPi Reference Integration
+     https://wiki.rdkcentral.com/display/ASP/USP-PA+on+RDK-B+2022q1+%3A+RPi+Reference+Integration 
