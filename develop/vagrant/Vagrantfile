@@ -251,7 +251,6 @@ Vagrant.configure("2") do |config|
         # config.vm.provision "file", source: ".dsm-config", destination: ".dsm-config"
         # to go inside the Vagrant.configure("2") do |config| section above
         
-#        echo 'export DSM_CONFIG_FILE=/home/vagrant/srcDsm/rdk-smart-router/vagrant/dsm.config' >> /home/vagrant/.profile
         mkdir -p /home/vagrant/destination
         mkdir -p /home/vagrant/repo
         cp /home/vagrant/srcDsm/DSM/src/dsm.config /home/vagrant/dsm.config
@@ -272,12 +271,11 @@ Vagrant.configure("2") do |config|
         mkdir ~/srcUsp
         cd ~/srcUsp
         git clone git@github.com:BroadbandForum/obuspa.git
-#        git clone git@gitlab.consult.red:dave.chapman/usp-pa-vendor-rdk.git
-#        cd usp-pa-vendor-rdk
-#        git checkout pc_build
         cd ./obuspa
         git checkout v4.1.0-master
- #       cp ../usp-pa-vendor-rdk/src/vendor/vendor.c src/vendor/vendor.c
+        cp ../srcDsm/integration/rdk-b-22q1/usp/src/vendor/lcm_datamodel.c src/vendor # CP LCM code
+        cp ../srcDsm/develop/usp/src/vendor-PC-DEV.c src/vendor/vendor.c # CP Vendor PC code
+ 
         autoreconf --force --install
         ./configure
         make
