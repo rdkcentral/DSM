@@ -1,4 +1,4 @@
-*Add DSM and Build a Bootable Raspberry Pi (Model 3 B++) Image and Flash to an SD Card 
+*Add USP and Build a Bootable Raspberry Pi (Model 3 B++) Image and Flash to an SD Card 
 
 ** Obtain the RDKB source code (ie for 4th quarter of 2021)
 
@@ -14,7 +14,7 @@
    # configure to build a Raspberry Pi image
    MACHINE=raspberrypi-rdk-broadband source meta-cmf-raspberrypi/setup-environment
 
-** Patch/overlay to RDKB workspace files to configure DSM in the build
+** Patch/overlay to RDKB workspace files to configure DSM+USP in the build
 
    cd <workspace dir>
 
@@ -23,6 +23,9 @@
 
    # overlay/add  files to configure a DSM build for Raspberry Pi 
    ./DSM/integration/rdk-b-22q1/dsm/rpi/scripts/apply_patches_overlays.sh 
+
+   # overlay/add files to configure UspPa in the  build for Raspberry Pi 
+   ./DSM/integration/rdk-b-22q1/usp/rpi/scripts/apply_patches_overlays.sh 
 
 ** Build the Raspberry Pi Image
 
@@ -55,11 +58,8 @@
 
 * RdKCentral Documentation
 
-   DSM on RDK-B 2022q1 : RPi Reference Integration
-     https://wiki.rdkcentral.com/display/ASP/DSM+on+RDK-B+2022q1+%3A+RPi+Reference+Integration 
-
-   Testing on the Raspberry Pi Model 3 B++ Target (DSM) 
-     https://wiki.rdkcentral.com/pages/viewpage.action?pageId=213586819 
-
    USP-PA on RDK-B 2022q1 : RPi Reference Integration
-     https://wiki.rdkcentral.com/display/ASP/USP-PA+on+RDK-B+2022q1+%3A+RPi+Reference+Integration 
+     https://wiki.rdkcentral.com/display/ASP/USP-PA+on+RDK-B+2022q1+%3A+RPi+Reference+Integration
+
+   TESTING - USP-PA on RDK-B 2022q1 : RPi Reference Integration
+     https://wiki.rdkcentral.com/display/ASP/TESTING+-+USP-PA+on+RDK-B+2022q1+%3A+RPi+Reference+Integration 

@@ -22,5 +22,5 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=c466d4ab8a68655eb1edf0bf8c1a8fb8"
 S = "${WORKDIR}/git"
 SRC_URI= "git://git@github.com/rdkcentral/DSM;protocol=ssh;branch=main"
 
-SRCREV = "c459281ab4b0a89fc79dc6334a2e1152e40c18c7"
+SRCREV = "403a90c3f0997035f2f117a570a6c67ab4af48cc"
 inherit pkgconfig cmake
