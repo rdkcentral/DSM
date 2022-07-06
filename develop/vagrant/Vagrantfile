@@ -250,8 +250,13 @@ Vagrant.configure("2") do |config|
         # could have a custom one in our vagrant repo that sets up nicely for the VM
         # config.vm.provision "file", source: ".dsm-config", destination: ".dsm-config"
         # to go inside the Vagrant.configure("2") do |config| section above
-
+        
 #        echo 'export DSM_CONFIG_FILE=/home/vagrant/srcDsm/rdk-smart-router/vagrant/dsm.config' >> /home/vagrant/.profile
+        mkdir -p /home/vagrant/destination
+        mkdir -p /home/vagrant/repo
+        cp /home/vagrant/srcDsm/DSM/src/dsm.config /home/vagrant/dsm.config
+
+        echo 'export DSM_CONFIG_FILE=/home/vagrant/dsm.config'
     SHELL
 
     ##################################################
