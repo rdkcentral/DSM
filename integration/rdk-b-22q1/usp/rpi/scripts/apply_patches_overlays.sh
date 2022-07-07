@@ -217,7 +217,9 @@ echo "using newbies in $newbies "
 if [ "$3" == "" ]; then
     apply_patch meta-rdk-broadband/recipes-rdkb/usp-pa/usp-pa.bb $target $patches
 fi
-if [ "$3" == "vendor" ]; then
-    apply_patch ./vendor.c $target/vendor $patch_new_files_dir/vendor/src
+if [ "$3" == "new" ]; then
     apply_patch vendor/lcm_datamodel.c $target $newbies
+fi
+if [ "$3" == "vendor" ]; then
+    apply_patch ./vendor.c $target $patch_new_files_dir
 fi
