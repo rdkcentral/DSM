@@ -203,11 +203,21 @@ if [ ! -d "$patch_new_files_dir" ]; then
     exit 6
 fi
 
+echo "====>>>"
+
 #apply the patches to add USP-PA to a 22q1 RDKB build for Rpi
 patches=$patch_new_files_dir/patches
+newbies=$patch_new_files_dir/new
 echo "patches=$patches"
 echo "using targets in $target "
 echo "using patches in $patches "
+echo "using newbies in $newbies "
 
    # usp-pa patches
-apply_patch meta-rdk-broadband/recipes-rdkb/usp-pa/usp-pa.bb $target $patches
+if [ "$3" == "" ]; then
+    apply_patch meta-rdk-broadband/recipes-rdkb/usp-pa/usp-pa.bb $target $patches
+fi 
+if [ "$3" == "vendor" ]; then
+    apply_patch vendor/vendor.c $target $patches
+    apply_patch vendor/lcm_datamodel.c $target $newbies
+fi 
