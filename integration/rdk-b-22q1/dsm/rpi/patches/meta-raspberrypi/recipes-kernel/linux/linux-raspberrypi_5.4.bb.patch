@@ -1,3 +1,5 @@
+# Source: Consult Red
+
 diff --git a/recipes-kernel/linux/linux-raspberrypi_5.4.bb b/recipes-kernel/linux/linux-raspberrypi_5.4.bb
 index f897f1b..d7f0a81 100644
 --- a/recipes-kernel/linux/linux-raspberrypi_5.4.bb

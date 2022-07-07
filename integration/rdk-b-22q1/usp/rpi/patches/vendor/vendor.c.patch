@@ -1,3 +1,5 @@
+# Source: Consult Red
+
 diff --git a/src/vendor/vendor.c b/src/vendor/vendor.c
 index 2ea9bba..825dadb 100755
 --- a/src/vendor/vendor.c

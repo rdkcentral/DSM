@@ -1,3 +1,5 @@
+# Source: Consult Red
+
 diff --git a/recipes-rdkb/usp-pa/usp-pa.bb b/recipes-rdkb/usp-pa/usp-pa.bb
 index 2b1df79..c117e0c 100644
 --- a/recipes-rdkb/usp-pa/usp-pa.bb

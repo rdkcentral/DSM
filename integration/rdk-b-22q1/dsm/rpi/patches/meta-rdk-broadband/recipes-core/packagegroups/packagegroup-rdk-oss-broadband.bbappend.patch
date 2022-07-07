@@ -1,3 +1,5 @@
+# Source: Consult Red
+
 diff --git a/recipes-core/packagegroups/packagegroup-rdk-oss-broadband.bbappend b/recipes-core/packagegroups/packagegroup-rdk-oss-broadband.bbappend
 index 124663b..0b839e0 100644
 --- a/recipes-core/packagegroups/packagegroup-rdk-oss-broadband.bbappend
