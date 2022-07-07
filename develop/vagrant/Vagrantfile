@@ -252,7 +252,7 @@ Vagrant.configure("2") do |config|
         cd ./obuspa
         git checkout v4.1.0-master
         cp ../../srcDsm/DSM/integration/rdk-b-22q1/usp/src/vendor/lcm_datamodel.c src/vendor/lcm_datamodel.c # CP LCM code
-	patch -p1 < ../../src/DSM/usp/vendor/src/vendor.c.patch # Patch vendor integration to pull in LCM data model
+	patch -p1 < ../../srcDsm/DSM/develop/usp/vendor/src/vendor.c.patch # Patch vendor integration to pull in LCM data model
  
         autoreconf --force --install
         ./configure
