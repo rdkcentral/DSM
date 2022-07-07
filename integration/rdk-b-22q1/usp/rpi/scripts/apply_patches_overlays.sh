@@ -216,8 +216,8 @@ echo "using newbies in $newbies "
    # usp-pa patches
 if [ "$3" == "" ]; then
     apply_patch meta-rdk-broadband/recipes-rdkb/usp-pa/usp-pa.bb $target $patches
-fi 
+fi
 if [ "$3" == "vendor" ]; then
     apply_patch vendor/vendor.c $target $patches
     apply_patch vendor/lcm_datamodel.c $target $newbies
-fi 
+fi
