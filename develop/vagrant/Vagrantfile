@@ -36,8 +36,8 @@ Vagrant.configure("2") do |config|
     #
     config.vm.box = "ubuntu/focal64"
 
-    config.vm.hostname = "dobby-vagrant-focal"
-    config.vm.define "dobby-vagrant-focal"
+    config.vm.hostname = "dsm-vagrant-focal"
+    config.vm.define "dsm-vagrant-focal"
 
     config.vm.network "public_network"
 
