@@ -1,0 +1,14 @@
+# Source: Consult Red
+
+diff --git a/conf/machine/raspberrypi-rdk-broadband.conf b/conf/machine/raspberrypi-rdk-broadband.conf
+index 5333f37..49fcdb4 100644
+--- a/conf/machine/raspberrypi-rdk-broadband.conf
++++ b/conf/machine/raspberrypi-rdk-broadband.conf
+@@ -20,3 +20,6 @@ MACHINE_EXTRA_RRECOMMENDS += "kernel-module-8192eu kernel-module-rtl8812au kerne
+ DISTRO_FEATURES_append = " referencepltfm "
+ 
+ DISTRO_FEATURES_append_dunfell = " ipv6"
++
++DISTRO_FEATURES_append = " DOBBY_CONTAINERS "
++DISTRO_FEATURES_append_dunfell = " DOBBY_CONTAINERS "
+\ No newline at end of file

@@ -1,0 +1,25 @@
+# Source: Consult Red
+
+diff --git a/recipes-rdkb/usp-pa/usp-pa.bb b/recipes-rdkb/usp-pa/usp-pa.bb
+index 2b1df79..c117e0c 100644
+--- a/recipes-rdkb/usp-pa/usp-pa.bb
++++ b/recipes-rdkb/usp-pa/usp-pa.bb
+@@ -20,6 +20,9 @@ SRC_URI[obuspa.md5sum] = "b709d54f08aa528b73d435d71717f34f"
+ SRC_URI += "git://github.com/rdkcentral/usp-pa-vendor-rdk;protocol=http;branch=main;name=usppa"
+ SRCREV_usppa = "c2a275ee27eb86a7df128ce790a50ef42cccc5da"
+ 
++SRC_URI += "git://git@github.com/rdkcentral/DSM.git;subpath=integration/rdk-b-22q1/usp/rpi;protocol=ssh;branch=main;name=usppa2"
++SRCREV_usppa2 = "f3c7966f3c17fc3d49c7dbe1bcff210d18021f1c"
++
+ # Patches for OBUSPA
+ #SRC_URI += "file://patches/example.patch"
+ 
+@@ -52,6 +55,8 @@ LDFLAGS += "-ldbus-1 -lccsp_common"
+ 
+ # Specialize the OBUSPA release by copying across the RDK specific source files to the source directory
+ do_configure_prepend() {
++    remove_patches=yes ${WORKDIR}/rpi/scripts/apply_patches_overlays.sh  ${WORKDIR}/git/src  ${WORKDIR}/rpi  vendor    
++    ${WORKDIR}/rpi/scripts/apply_patches_overlays.sh  ${WORKDIR}/git/src  ${WORKDIR}/rpi  vendor    
+     cp ${WORKDIR}/git/src/vendor/* ${S}/src/vendor
+ }
+ 

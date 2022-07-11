@@ -1,0 +1,51 @@
+# Source: Consult Red
+
+diff --git a/src/vendor/vendor.c b/src/vendor/vendor.c
+index 2ea9bba..825dadb 100755
+--- a/src/vendor/vendor.c
++++ b/src/vendor/vendor.c
+@@ -70,6 +70,11 @@
+ #include "usp_api.h"
+ #include "text_utils.h"
+ 
++#define INCLUDE_LCM_DATAMODEL
++
++#ifdef    INCLUDE_LCM_DATAMODEL
++#include "lcm_datamodel.c"
++#endif
+ 
+ //-------------------------------------------------------------------------------------------------
+ // Handle for connection to DBus
+@@ -249,6 +254,10 @@ int VENDOR_Init(void)
+         return err;
+     }
+ 
++#ifdef INCLUDE_LCM_DATAMODEL
++    LCM_VENDOR_Init();
++#endif
++
+     return USP_ERR_OK;
+ }
+ 
+@@ -268,6 +277,10 @@ int VENDOR_Init(void)
+ **************************************************************************/
+ int VENDOR_Start(void)
+ {
++#ifdef INCLUDE_LCM_DATAMODEL
++    LCM_VENDOR_Start();
++#endif
++
+     return USP_ERR_OK;
+ }
+ 
+@@ -292,6 +305,10 @@ int VENDOR_Stop(void)
+         bus_handle = NULL;
+     }
+ 
++#ifdef INCLUDE_LCM_DATAMODEL
++    LCM_VENDOR_Stop();
++#endif
++
+     return USP_ERR_OK;
+ }
+ 

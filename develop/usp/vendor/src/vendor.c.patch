@@ -1,0 +1,50 @@
+# Source: Consult Red
+
+diff --git a/src/vendor/vendor.c b/src/vendor/vendor.c
+index 7512a10..0e6b34e 100755
+--- a/src/vendor/vendor.c
++++ b/src/vendor/vendor.c
+@@ -48,6 +48,12 @@
+ #include "vendor_api.h"
+ #include "usp_api.h"
+ 
++#define INCLUDE_LCM_DATAMODEL
++
++#ifdef    INCLUDE_LCM_DATAMODEL
++#include "lcm_datamodel.c"
++#endif
++
+ /*********************************************************************//**
+ **
+ ** VENDOR_Init
+@@ -61,6 +67,9 @@
+ **************************************************************************/
+ int VENDOR_Init(void)
+ {
++#ifdef INCLUDE_LCM_DATAMODEL
++    LCM_VENDOR_Init();
++#endif
+ 
+     return USP_ERR_OK;
+ }
+@@ -81,6 +90,9 @@ int VENDOR_Init(void)
+ **************************************************************************/
+ int VENDOR_Start(void)
+ {
++#ifdef INCLUDE_LCM_DATAMODEL
++    LCM_VENDOR_Start();
++#endif
+ 
+     return USP_ERR_OK;
+ }
+@@ -99,6 +111,9 @@ int VENDOR_Start(void)
+ **************************************************************************/
+ int VENDOR_Stop(void)
+ {
++#ifdef INCLUDE_LCM_DATAMODEL
++    LCM_VENDOR_Stop();
++#endif
+ 
+     return USP_ERR_OK;
+ }
+
