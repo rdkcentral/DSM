@@ -17,10 +17,10 @@
 
 SUMMARY = "Downloadable Software Modules"
 LICENSE = "Apache-2.0"
-LIC_FILES_CHKSUM = "file://LICENSE;md5=c466d4ab8a68655eb1edf0bf8c1a8fb8"
+LIC_FILES_CHKSUM = "file://LICENSE;md5=50e2d278b66b3b7b20bc165c146a2b58"
 
 S = "${WORKDIR}/git"
 SRC_URI= "git://git@github.com/rdkcentral/DSM;protocol=ssh;branch=main"
 
-SRCREV = "403a90c3f0997035f2f117a570a6c67ab4af48cc"
+SRCREV = "e2386b3ab0640fd7ffacb5f6895d05b176f63eba"
 inherit pkgconfig cmake

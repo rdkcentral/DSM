@@ -1,7 +1,5 @@
-# Source: Consult Red
-
 diff --git a/recipes-rdkb/usp-pa/usp-pa.bb b/recipes-rdkb/usp-pa/usp-pa.bb
-index 2b1df79..c117e0c 100644
+index 2b1df79..ea40633 100644
 --- a/recipes-rdkb/usp-pa/usp-pa.bb
 +++ b/recipes-rdkb/usp-pa/usp-pa.bb
 @@ -20,6 +20,9 @@ SRC_URI[obuspa.md5sum] = "b709d54f08aa528b73d435d71717f34f"
@@ -9,7 +7,7 @@ index 2b1df79..c117e0c 100644
  SRCREV_usppa = "c2a275ee27eb86a7df128ce790a50ef42cccc5da"
  
 +SRC_URI += "git://git@github.com/rdkcentral/DSM.git;subpath=integration/rdk-b-22q1/usp/rpi;protocol=ssh;branch=main;name=usppa2"
-+SRCREV_usppa2 = "f3c7966f3c17fc3d49c7dbe1bcff210d18021f1c"
++SRCREV_usppa2 = "e2386b3ab0640fd7ffacb5f6895d05b176f63eba"
 +
  # Patches for OBUSPA
  #SRC_URI += "file://patches/example.patch"
