@@ -1,0 +1,10 @@
+diff --git a/conf/distro/include/rdk-turris.inc b/conf/distro/include/rdk-turris.inc
+index 50aadc0..ff82969 100644
+--- a/conf/distro/include/rdk-turris.inc
++++ b/conf/distro/include/rdk-turris.inc
+@@ -24,3 +24,5 @@ DISTRO_FEATURES_append = " rdkb_extender"
+ 
+ #Kernel upgrade
+ DISTRO_FEATURES_append = " kernel5.x"
++
++DISTRO_FEATURES_append = " DOBBY_CONTAINERS "

@@ -1,0 +1,13 @@
+diff --git a/recipes-kernel/linux/linux-yocto_5.15.44.bb b/recipes-kernel/linux/linux-yocto_5.15.44.bb
+index b9fc6c6..6181856 100644
+--- a/recipes-kernel/linux/linux-yocto_5.15.44.bb
++++ b/recipes-kernel/linux/linux-yocto_5.15.44.bb
+@@ -48,6 +48,8 @@ SRC_URI += " file://defconfig \
+              file://910-drivers-leds-wt61p803-puzzle-improvements.patch \
+ "
+ 
++SRC_URI += " file://container.cfg"
++
+ SRC_URI_remove += "file://0001-add-support-for-http-host-headers-cookie-url-netfilt.patch \
+                    file://0001-selinux-update-netlink-socket-classes.patch \
+ "
