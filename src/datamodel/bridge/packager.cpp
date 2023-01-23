@@ -21,7 +21,9 @@
 #include <algorithm>
 #include <iostream>
 
-void empty_callback(std::string uri, Packager::PackageState state) {}
+void empty_callback(std::string uri, Packager::PackageState state) 
+{
+}
 
 PackageData::PackageData(std::string ext_id, std::string uri)
     : ext_id(ext_id), 
@@ -55,7 +57,11 @@ PackageData::PackageData(nlohmann::json data)
       }      
 }
 
-void PackageData::notify() { update_callback(uri, state); }
+void PackageData::notify() 
+{ 
+   std::cout << "update_callback(" << uri << "," << state << ")" << std::endl;
+   update_callback(uri, state); 
+}
 
 auto PackageData::to_json() -> nlohmann::json{
    nlohmann::json ret;
@@ -107,6 +113,10 @@ auto Packager::install(std::string ext_id) -> bool {
    // package is created in DU contructor. It must exists here already.
    if (nullptr == package) return false;
 
+   package->state = Packager::Installing;
+   std::cout << "Packager::install 1 outside thread id="<< std::this_thread::get_id() << std::endl;
+   package->notify();
+   
    worker->execute_async_task([=]() { 
       auto result = packager_adapter->install(package,ext_id, package->uri); 
       if (result["state"]=="installed") {
@@ -116,11 +126,13 @@ auto Packager::install(std::string ext_id) -> bool {
       else {
          package->state = Packager::Undefined;
       }
+      std::cout << "Packager::install inside thread id="<< std::this_thread::get_id() << std::endl;
       package->notify();
 
    });
-   package->state = Packager::Installing;
-   package->notify();
+
+   
+   std::cout << "Packager::install 2 outside thread id "<< std::this_thread::get_id() << std::endl;
    return true;
 }
 
@@ -160,6 +172,7 @@ auto Packager::find_package(std::string ext_id) -> std::shared_ptr<PackageData> 
 void Packager::on_update(std::string ext_id, std::function<void(std::string, Packager::PackageState)> callback) {
    auto package = find_package(ext_id);
    if (nullptr == package) return;
+   std::cout << "Packager::on_update" << std::endl;
    package->update_callback = callback;
    package->notify();
 }

@@ -43,10 +43,16 @@ class ExecutionEnvironment {
 
    auto id() const -> unsigned int;
    auto name() const -> std::string;
-   auto install(std::string uri) -> DeploymentUnit *;
-   auto add_existing(PackageData &installed_package) -> DeploymentUnit *;
+   auto enable() const -> bool;
+   auto set_enable(bool en) -> void;
+   auto status() const -> std::string;
+   auto initial_runlevel() const -> int;
+   auto set_initial_runlevel(int rl) -> void;
+   auto current_runlevel() const -> int;
+   auto install(std::string uri) -> std::shared_ptr<DeploymentUnit>;
+   auto add_existing(PackageData &installed_package) -> std::shared_ptr<DeploymentUnit>;
    auto has_du_in_config(std::string uid) -> bool;
-   auto find_deplyment_unit(std::string uri) -> std::shared_ptr<DeploymentUnit>;
+   auto find_deployment_unit(std::string uri) -> std::shared_ptr<DeploymentUnit>;
    auto to_json() -> nlohmann::json;
    auto is_default() -> bool;
    auto get_eu_list() -> std::vector<ExecutionUnit *> ;

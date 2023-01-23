@@ -105,20 +105,22 @@ auto ContainerRuntimeAdapter::stop(std::string id) -> nlohmann::json{
 }
 
 auto ContainerRuntimeAdapter::detail(std::string id) -> nlohmann::json{
-    std::cout<< "ContainerRuntimeAdapter::detail(std::string id) -> nlohmann::json" << id<<std::endl;
+    //std::cout<< "ContainerRuntimeAdapter::detail id=" << id.c_str() <<std::endl;
     nlohmann::json ret;
 
     std::string result;
     int ret_code;
 
+    std::string command_state;
+
     if (use_dobby) // Use Dobby
     {
-        std::string command_state = "DobbyTool info " + id;    
+        command_state = "DobbyTool info " + id; 
         std::tie(ret_code, result) = execute_command(command_state);
     }
     else // Use Crun
     {
-        std::string command_state = "crun state "+id;    
+        command_state = "crun state "+id;
         std::tie(ret_code, result) = execute_command(command_state);
     }
 
@@ -134,15 +136,31 @@ auto ContainerRuntimeAdapter::detail(std::string id) -> nlohmann::json{
 
     if (ret_code == 0){
         // Translate data from execution env to TR-Datamodel
-        auto cmd_result = nlohmann::json::parse(result);
+        auto cmd_result = nlohmann::json::parse(result, nullptr, false);
 
         // ret_detail["state"] = cmd_result["status"];
         // Test for JSON format of both crun & dobby (Why are these the same!?)
-        if (     cmd_result["status"] == "running" || cmd_result["state"] == "running")  ret_detail["status"] = "Active";
-        else if (cmd_result["status"] == "stopped" || cmd_result["state"] == "stopped")  ret_detail["status"] = "Idle";
-        else if (cmd_result["status"] == "exited"  || cmd_result["state"] == "exited")   ret_detail["status"] = "Idle";
-        else if (cmd_result["status"] == "created" || cmd_result["state"] == "created" ) ret_detail["status"] = "Starting";
-        else ret_detail["status"] = "Undefined";
+        if (cmd_result["status"] == "running" || cmd_result["state"] == "running") 
+        {
+            ret_detail["status"] = "Active";
+        }
+        else if (cmd_result["status"] == "stopped" || cmd_result["state"] == "stopped")  
+        {
+            ret_detail["status"] = "Idle";
+        }
+        else if (cmd_result["status"] == "exited"  || cmd_result["state"] == "exited")  
+        {
+          ret_detail["status"] = "Idle";  
+        }
+        else if (cmd_result["status"] == "created" || cmd_result["state"] == "created" ) 
+        {
+            ret_detail["status"] = "Starting";
+        }
+        else 
+        {   
+            ret_detail["status"] = "Undefined";
+        }
+
     } else {
         // command failed means container is not started
         ret_detail["status"]="Idle";
