@@ -38,6 +38,7 @@ class ExecutionUnit{
 
     public:
         ExecutionUnit(ExecutionEnvironment *parent_ee, DeploymentUnit *parent_du);
+        ~ExecutionUnit();
         ExecutionUnit &operator= (const ExecutionUnit &) = delete;
 
         void start();

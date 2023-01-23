@@ -32,27 +32,39 @@ auto ExecutionEnvironment::id() const -> unsigned int { return config["id"]; }
 
 auto ExecutionEnvironment::name() const -> std::string { return config["name"]; }
 
-auto ExecutionEnvironment::install(std::string uri) -> DeploymentUnit * {   
+auto ExecutionEnvironment::enable() const -> bool { return config["enabled"]; }
+
+auto ExecutionEnvironment::set_enable(bool en) -> void { config["enabled"]=en; }
+
+auto ExecutionEnvironment::status() const -> std::string { return config["status"]; }
+
+auto ExecutionEnvironment::initial_runlevel() const -> int { return config["InitialRunLevel"]; }
+
+auto ExecutionEnvironment::set_initial_runlevel(int rl) -> void { config["InitialRunLevel"]=rl; }
+
+auto ExecutionEnvironment::current_runlevel() const -> int { return config["CurrentRunLevel"]; }
+
+auto ExecutionEnvironment::install(std::string uri) -> std::shared_ptr<DeploymentUnit> {   
    auto package = packager->find_package(uri);
    if (package != nullptr && package->state != Packager::Uninstalled){
       std::cout << "   EE: Install: Package already installed" << std::endl;
       return nullptr;
    }
-   auto du = find_deplyment_unit(uri);
+   auto du = find_deployment_unit(uri);
    if (du == nullptr) {
       du = std::make_shared<DeploymentUnit>(this, uri, packager);
       du_list.push_back(du);
    }
    std::cout << "   EE: Install: back from vector" << std::endl;
    du->install();
-   return &(*du);
+   return du;
 }
 
-auto ExecutionEnvironment::add_existing(PackageData &installed_package) -> DeploymentUnit * {
+auto ExecutionEnvironment::add_existing(PackageData &installed_package) -> std::shared_ptr<DeploymentUnit> {
    std::cout << "   EE: add_existing:" << installed_package.ext_id << std::endl;
    auto du = std::make_shared<DeploymentUnit>(this, installed_package, packager);
    this->du_list.push_back(du);
-   return &(*du);
+   return du;
 }
 
 auto ExecutionEnvironment::has_du_in_config(std::string uid) -> bool {
@@ -62,7 +74,7 @@ auto ExecutionEnvironment::has_du_in_config(std::string uid) -> bool {
    return false;
 }
 
-auto ExecutionEnvironment::find_deplyment_unit(const std::string uri) -> std::shared_ptr<DeploymentUnit> {
+auto ExecutionEnvironment::find_deployment_unit(const std::string uri) -> std::shared_ptr<DeploymentUnit> {
    auto elem = std::find_if(begin(du_list), end(du_list),
                             [=](std::shared_ptr<DeploymentUnit> du) { return du->get_uri() == uri; });
    if (elem == end(du_list)) return nullptr;

@@ -35,8 +35,11 @@
 class DSMController {
    nlohmann::json config;
    std::vector<std::shared_ptr<ExecutionEnvironment> > ee_list_vector;
-   std::vector<DeploymentUnit*> du_list_vector;
-   // std::vector<ExecutionUnit*> eu_list_vector;
+   std::vector<std::shared_ptr<DeploymentUnit>> du_list_vector;
+   std::mutex du_list_mutex;
+   std::mutex eu_list_mutex;
+   
+   
    std::shared_ptr<Packager> packager{nullptr};
    std::shared_ptr<ContainerRuntime> runtime{nullptr};
    std::shared_ptr<SocketServer> command_server{nullptr};
@@ -54,6 +57,9 @@ class DSMController {
    ~DSMController();
    void command_handler_loop();
    void configure(std::string config_file_name);
+   
+   auto find_deployment_unit(std::string uid) -> std::shared_ptr<DeploymentUnit>;
+
    auto find_execution_environment(unsigned int i) -> std::shared_ptr<ExecutionEnvironment>;
    auto find_execution_environment(const std::string& name) -> std::shared_ptr<ExecutionEnvironment>;
    auto find_execution_unit(const std::string &uid) -> ExecutionUnit *;

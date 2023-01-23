@@ -50,7 +50,7 @@ class DeploymentUnit {
    auto get_state() -> Packager::PackageState;
    auto get_duid() -> std::string;
    void install();
-   void uninstall();
+   bool uninstall();
    auto parent_ee() -> ExecutionEnvironment *;
    void on_package_update(std::string updated_uri, Packager::PackageState new_state);
    auto to_json() -> nlohmann::json;
