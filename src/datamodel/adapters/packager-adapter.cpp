@@ -22,12 +22,16 @@
 #include <dirent.h>
 #include <stdio.h>
 #include <string.h>
-
+#include <cstdio>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+
+#include <filesystem>
+namespace fs = std::filesystem;
+
 
 #include "../../utils/file-system.hpp"
 
@@ -98,13 +102,37 @@ auto save_package_config (std::string dest, std::string id, std::string uri, std
       {
          package_data["path"] = path;
          package_data["exec"] = path_exists(path + "/config.json");
-
-         std::ofstream package_file(dest + localUri + ".json");
-         package_file << package_data <<std::endl;
+         try
+         {
+            std::ofstream package_file(dest + localUri + ".json");
+            package_file << package_data <<std::endl;
+         }
+         catch (const std::exception &e)
+         {
+            std::cerr << e.what() << '\n';
+         }
       }
       
       return package_data;
    }
+}
+auto delete_package_config (std::string dest, std::string id, std::string uri, std::string state, std::string path="",std::string localUri="") -> nlohmann::json
+{
+   nlohmann::json package_data;
+   package_data["id"] = id;
+   package_data["uri"] = uri;
+   package_data["state"] = state;
+   
+   if (path.length() > 0)
+   {
+      auto file_name = path + ".tar.json";
+      bool file_exist = path_exists(file_name);
+      if (file_exist)
+      {
+         remove(file_name.c_str());
+      }
+   }
+   return package_data;
 }
 
 PackagerAdapter::PackagerAdapter() : config("") {
@@ -191,11 +219,9 @@ auto PackagerAdapter::uninstall(std::string id) -> nlohmann::json {
    save_package_config(dest, id, uri, "uninstalling");
 
    std::string path = package_config["path"];
+   fs::remove_all(path);
 
-   std::string cleanup_command = "rm -rf " + path;
-   std::system(cleanup_command.c_str());
-
-   auto package_status = save_package_config(dest, id, uri, "uninstalled",path,convertToLocalUri(id));
+   auto package_status = delete_package_config(dest, id, uri, "uninstalled",path,convertToLocalUri(id));
    return package_status;
 }
 
@@ -208,22 +234,28 @@ auto PackagerAdapter::is_installed(std::string id) -> bool{
 auto PackagerAdapter::list() -> nlohmann::json {
    auto dest = std::string(config["destination"]) + "/";
    auto ret = nlohmann::json::parse("[]");
-
-   DIR* dirFile = opendir(dest.c_str());
-   if (dirFile) {
-      struct dirent* hFile;
-      errno = 0;
-      while ((hFile = readdir(dirFile)) != NULL) {
-         if (!strcmp(hFile->d_name, ".")) continue;
-         if (!strcmp(hFile->d_name, "..")) continue;
-	 if (strstr(hFile->d_name, ".json")) {
-            nlohmann::json package_data;
-            std::fstream package_file(dest + hFile->d_name);
-            package_file >> package_data;
-            ret.push_back(package_data);
+   try
+   {
+      DIR* dirFile = opendir(dest.c_str());
+      if (dirFile) {
+         struct dirent* hFile;
+         errno = 0;
+         while ((hFile = readdir(dirFile)) != NULL) {
+            if (!strcmp(hFile->d_name, ".")) continue;
+            if (!strcmp(hFile->d_name, "..")) continue;
+      if (strstr(hFile->d_name, ".json")) {
+               nlohmann::json package_data;
+               std::fstream package_file(dest + hFile->d_name);
+               package_file >> package_data;
+               ret.push_back(package_data);
+            }
          }
+         closedir(dirFile);
       }
-      closedir(dirFile);
+   }
+   catch(const std::exception& e)
+   {
+      std::cout << e.what() << std::endl;
    }
    return ret;
 }

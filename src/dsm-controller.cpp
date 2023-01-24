@@ -129,6 +129,18 @@ auto DSMController::find_execution_environment(unsigned int id) -> std::shared_p
    return *elem;
 }
 
+
+auto DSMController::find_deployment_unit(std::string uri) -> std::shared_ptr<DeploymentUnit> 
+{
+   std::lock_guard<std::mutex> lock (du_list_mutex);
+   auto du =
+       find_if(du_list_vector.begin(), du_list_vector.end(), [=](std::shared_ptr<DeploymentUnit> du) { return uri == du->get_duid(); });
+   if (du == du_list_vector.end()) {
+      return nullptr;
+   }
+   return (*du);
+}
+
 auto DSMController::find_execution_environment(const std::string& ee_name) -> std::shared_ptr<ExecutionEnvironment> {
    auto elem = std::find_if(begin(ee_list_vector), end(ee_list_vector),
                             [=](std::shared_ptr<ExecutionEnvironment> ee_ptr) { return ee_name == ee_ptr->name(); });
@@ -199,42 +211,75 @@ void DSMController::build_repository() {
 
 auto DSMController::du_install(const nlohmann::json params) -> nlohmann::json {
    std::cout << "DSMController::install_du()" << std::endl;
-   if (!has_keys(params, {"ee_name", "uri"})) {
-      return nlohmann::json::parse(R"( {"error":"install_du: missing expected parameters 'ee_name','uri'."} )");
-   }
-   std::string ee_name = params["ee_name"];
-   std::string uri = params["uri"];
-   auto ee = find_execution_environment(ee_name);
+   auto output = nlohmann::json::parse("{}");
+   try
+   {
+      if (!has_keys(params, {"ee_name", "uri"})) {
+         return nlohmann::json::parse(R"( {"error":"install_du: missing expected parameters 'ee_name','uri'."} )");
+      }
+      std::string ee_name = params["ee_name"];
+      std::string uri = params["uri"];
+      auto ee = find_execution_environment(ee_name);
 
-   if (nullptr == ee) {
-      return nlohmann::json::parse(R"( {"error":"install_du: target environment doesn't exists"} )");
-   }
+      if (nullptr == ee) {
+         return nlohmann::json::parse(R"( {"error":"install_du: target environment doesn't exists"} )");
+      }
 
-   auto du = ee->install(uri);
-   if (du == nullptr){
-      return nlohmann::json::parse(R"("Package already installed")");
+      auto du = ee->install(uri);
+      if (du == nullptr){
+         output["response"] = "Package already installed";
+         return output;
+      }
+      {
+         std::lock_guard<std::mutex> lock (du_list_mutex);
+         du_list_vector.push_back(du);
+      }
+      std::cout << "DSMController::du_list += " << du->get_uri() <<"  ["<<du->get_detail()["state"] <<"]"<< std::endl;
+      auto output = nlohmann::json::parse("{}");
+      output["response"] = "Installation Started";
+      return output;
    }
-   du_list_vector.push_back(du);
-   std::cout << "DSMController::du_list += " << du->get_uri() <<"  ["<<du->get_detail()["state"] <<"]"<< std::endl;
-   return nlohmann::json::parse(R"("Installation started")");
+   catch (nlohmann::json::parse_error& e)
+    {
+        // output exception information
+        std::cout << "message: " << e.what() << '\n'
+                  << "exception id: " << e.id << '\n'
+                  << "byte position of error: " << e.byte << std::endl;
+      auto output = nlohmann::json::parse("{}");
+      output["response"] = "Installation Failed";
+      return output;
+    }
 }
 
 auto DSMController::du_uninstall(const nlohmann::json params) -> nlohmann::json {
    auto duid_to_unistall = params["uuid"];
    std::cout << "DSMController::uninstall_du(uuid:" << duid_to_unistall << ")" << std::endl;
    auto du =
-       find_if(du_list_vector.begin(), du_list_vector.end(), [=](DeploymentUnit* du) { return duid_to_unistall == du->get_duid(); });
+       find_if(du_list_vector.begin(), du_list_vector.end(), [=](std::shared_ptr<DeploymentUnit> du) 
+       { 
+         return duid_to_unistall == du->get_duid(); 
+       });
    if (du == du_list_vector.end()) {
       return nlohmann::json::parse(R"( {"error":"uninstall_du: du not found."} )");
    }
-   (*du)->uninstall();
-   return nlohmann::json::parse(R"("Uninstallation started")");
+   bool ret = (*du)->uninstall();
+   if (ret)
+   {
+      std::lock_guard<std::mutex> lock (du_list_mutex);
+      du_list_vector.erase(du);
+      return nlohmann::json::parse(R"("Uninstallation started")");
+   }
+   else
+   {
+      return nlohmann::json::parse(R"( {"error":"uninstall_du: Failed"} )");  
+   }
 }
 auto DSMController::du_update(const nlohmann::json params) -> nlohmann::json { return "not implemented"; }
 auto DSMController::du_reassign(const nlohmann::json params) -> nlohmann::json { return "not implemented"; }
 
 auto DSMController::du_list(const nlohmann::json params) -> nlohmann::json {
    auto ret = nlohmann::json::parse("[]");
+   std::lock_guard<std::mutex> lock (du_list_mutex);
    for (auto du : du_list_vector) {
       ret += du->get_uri();
    }
@@ -244,8 +289,9 @@ auto DSMController::du_list(const nlohmann::json params) -> nlohmann::json {
 auto DSMController::du_detail(const nlohmann::json params) -> nlohmann::json { 
    auto duid = params["uuid"];
    std::cout << "DSMController::detail_du(uuid:" << duid << ")" << std::endl;
+   std::lock_guard<std::mutex> lock (du_list_mutex);
    auto du =
-       find_if(du_list_vector.begin(), du_list_vector.end(), [=](DeploymentUnit* du) { return duid == du->get_duid(); });
+       find_if(du_list_vector.begin(), du_list_vector.end(), [=](std::shared_ptr<DeploymentUnit> du) { return duid == du->get_duid(); });
    if (du == du_list_vector.end()) {
       return nlohmann::json::parse(R"( {"error":"detail_du: du not found."} )");
    }
@@ -262,6 +308,7 @@ auto DSMController::ee_list(const nlohmann::json params) -> nlohmann::json {
 
 auto DSMController::eu_list(const nlohmann::json params) -> nlohmann::json { 
    auto ret = nlohmann::json::parse("[]");
+   std::lock_guard<std::mutex> lock (eu_list_mutex);
    for (auto ee: ee_list_vector){
       for (auto eu : ee->get_eu_list()) {
          ret += eu->get_uid();
@@ -272,8 +319,10 @@ auto DSMController::eu_list(const nlohmann::json params) -> nlohmann::json {
 
 auto DSMController::find_execution_unit(const std::string &uid) -> ExecutionUnit *{
    // TODO: very similar to eu_list - refactor it to use vector of eus
+   std::lock_guard<std::mutex> lock (eu_list_mutex);
    for (auto ee : ee_list_vector){
       for (auto eu: ee->get_eu_list()){
+         auto get_uid = eu->get_uid();
          if (uid == eu->get_uid()){
             return eu;
          }
@@ -283,7 +332,9 @@ auto DSMController::find_execution_unit(const std::string &uid) -> ExecutionUnit
 }
 
 auto DSMController::eu_detail(const nlohmann::json params) -> nlohmann::json { 
+   auto str_params = params.dump();
    auto eu_uid = params["uid"];
+   auto str_eu_uid = eu_uid.dump();
    auto eu = find_execution_unit(eu_uid);
    if (eu == nullptr){
       return nlohmann::json::parse(R"( {"error":"detail_eu: eu not found."} )");
@@ -294,11 +345,11 @@ auto DSMController::eu_detail(const nlohmann::json params) -> nlohmann::json {
 auto DSMController::eu_start(const nlohmann::json params) -> nlohmann::json { 
    auto eu_uid = params["uid"];
    auto eu = find_execution_unit(eu_uid);
-   std::cout << "   DSMController::eu_start("<< eu_uid<<", "<< eu->get_state()<<")"<<std::endl;
-
    if(eu == nullptr){
       return nlohmann::json::parse(R"( {"error":"detail_eu: eu not found."} )");
    }
+   std::cout << "   DSMController::eu_start("<< eu_uid<<", "<< eu->get_state()<<")"<<std::endl;
+
    if (eu->get_state() != ContainerRuntime::Idle){
       return nlohmann::json::parse(R"( {"error":"Cannot start EU which is not Idle."} )");    
    }
@@ -311,11 +362,12 @@ auto DSMController::eu_start(const nlohmann::json params) -> nlohmann::json {
 auto DSMController::eu_stop(const nlohmann::json params) -> nlohmann::json { 
    auto eu_uid = params["uid"];
    auto eu = find_execution_unit(eu_uid);
-   std::cout << "   DSMController::eu_stop("<< eu_uid<<", "<< eu->get_state()<<")"<<std::endl;
-
    if(eu == nullptr){
       return nlohmann::json::parse(R"( {"error":"detail_eu: eu not found."} )");
    }
+   
+   std::cout << "   DSMController::eu_stop("<< eu_uid<<", "<< eu->get_state()<<")"<<std::endl;
+
    if (eu->get_state() != ContainerRuntime::Active){
       return nlohmann::json::parse(R"( {"error":"Cannot stop EU which is not Active."} )");
    }
