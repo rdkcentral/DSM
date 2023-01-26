@@ -7,7 +7,7 @@ This is an initial implementation. It utilizes TR-181's datamodel concept of Exe
 2. Runtime (Dobby/crun)
 
 # Build
-It assumes Linux based system. Currently tested on ubuntu/debian. By default DSM has a dependency on rbus and librbusprovider, but this can be toggled off as a build option
+It assumes Linux based system. Currently tested on ubuntu/debian. DSM has an optional dependency on rbus and librbusprovider. This is currently off by default.
 
 1. Git clone project
 2. Enter main directory
