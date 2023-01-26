@@ -26,7 +26,11 @@ void empty_callback(std::string id, ContainerRuntime::ContainerState state){
 // Container Data Structure
 //////////////////////////////////////////////////////////////////////////////////////////
 ContainerData::ContainerData(std::string ext_id):ext_id(ext_id), state(ContainerRuntime::Undefined){}
-void ContainerData::notify(){update_callback(ext_id, state);}
+void ContainerData::notify()
+{
+    std::cout<<"ContainerData::notify ext_id="<<ext_id<<", state="<<state<<")"<<std::endl;
+    update_callback(ext_id, state);
+}
 
 // Container Data Runtime
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -36,12 +40,17 @@ ContainerRuntime::ContainerRuntime(const nlohmann::json config):
         container_adapter(nullptr){
     std::cout<<"<<create>> ContainerRuntime::ContainerRuntime(default)"<<std::endl;
     container_adapter = std::make_shared<ContainerRuntimeAdapter>();
-
     worker->start();
 }
 
 auto ContainerRuntime::start(const std::string &id, const std::string &bundle_path) -> bool {
     std::cout<<"ContainerRuntime::start(bundle_path:"<<bundle_path <<")"<<std::endl;
+    auto container_data = find_container(id);
+    if (container_data == nullptr)
+    {
+        container_data = std::make_shared<ContainerData>(id);
+        containers_list.push_back(container_data);
+    }
     worker->execute_async_task([=](){
         container_adapter->start(id, bundle_path);
     });
@@ -49,6 +58,13 @@ auto ContainerRuntime::start(const std::string &id, const std::string &bundle_pa
 }
 auto ContainerRuntime::stop(std::string id) -> bool {
     std::cout<<"ContainerRuntime::stop(container_id:"<<id<<")"<<std::endl;
+    auto container_data = find_container(id);
+    if (container_data == nullptr)
+    {
+        return false;    
+    }
+
+    container_data->state = Stopping;
     worker->execute_async_task([=](){
         container_adapter->stop(id);
     });
@@ -69,7 +85,6 @@ auto ContainerRuntime::find_container(std::string ext_id) -> std::shared_ptr<Con
 
 auto ContainerRuntime::pause(std::string id) -> bool { return false; }
 auto ContainerRuntime::resume(std::string id) -> bool { return false; }
-auto ContainerRuntime::getState(std::string id) -> std::string { return "idle"; }
 auto ContainerRuntime::getInfo(std::string id) -> nlohmann::json { 
     auto detail = container_adapter->detail(id);
     return detail;

@@ -20,6 +20,11 @@
 
 #include "dsm-controller.hpp"
 
+#ifdef ENABLE_RBUS_PROVIDER
+qweqwe
+#include "rbus/dsm_rbus_provider.hpp"
+#endif
+
 void TestUse() {
    DSMController dsm;
    dsm.configure("../../src/dsm.config");
@@ -34,7 +39,7 @@ void TestUse() {
    // ee->install("hello_world.tar");
    ee->install("sample.tar");
    // ee->install("du_only.tar");
-   auto du = ee->find_deplyment_unit("sample.tar");
+   auto du = ee->find_deployment_unit("sample.tar");
    du->uninstall();
 }
 
@@ -52,6 +57,12 @@ int main() {
    }
 
    dsm.configure(configFile);
+
+#ifdef ENABLE_RBUS_PROVIDER
+   dsm_rbus_provider rbus_provider(dsm);
+#endif
+   
+
    dsm.command_handler_loop();
 }
 

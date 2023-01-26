@@ -32,7 +32,11 @@ DeploymentUnit::DeploymentUnit(ExecutionEnvironment *parent_ee, std::string uri,
    config["UUID"] = uid;
    packager->append_package(uid, uri);
    packager->on_update(uri,
-                       [=](std::string uid, Packager::PackageState new_state) { on_package_update(uid, new_state); });
+                       [=](std::string uid, Packager::PackageState new_state) 
+                       { 
+                        std::cout << "on_package_update1 (" << uri << ")" << std::endl;
+                        on_package_update(uid, new_state); 
+                       });
 }
 DeploymentUnit::DeploymentUnit(ExecutionEnvironment *parent_ee, const PackageData &installed_package,
                                std::shared_ptr<Packager> packager)
@@ -45,7 +49,11 @@ DeploymentUnit::DeploymentUnit(ExecutionEnvironment *parent_ee, const PackageDat
    config["URI"] = installed_package.uri;
    config["UUID"] = installed_package.ext_id;
    packager->on_update(installed_package.uri,
-                       [=](std::string uid, Packager::PackageState new_state) { on_package_update(uid, new_state); });
+                       [=](std::string uid, Packager::PackageState new_state) 
+                       { 
+                        std::cout << "on_package_update2 (" << uid << ")" << std::endl;
+                        on_package_update(uid, new_state); 
+                       });
 }
 
 DeploymentUnit::DeploymentUnit(ExecutionEnvironment *parent_ee, const DeploymentUnit &other)
@@ -58,7 +66,11 @@ DeploymentUnit::DeploymentUnit(ExecutionEnvironment *parent_ee, const Deployment
    std::cout << "<<copy>> DeploymentUnit (" << uid << ")" << std::endl;
    config = other.config;
    packager->on_update(config["URI"],
-                       [=](std::string uid, Packager::PackageState new_state) { on_package_update(uid, new_state); });
+                       [=](std::string uid, Packager::PackageState new_state) 
+                       { 
+                        std::cout << "on_package_update3 (" << uid << ")" << std::endl;
+                        on_package_update(uid, new_state); 
+                       });
 }
 
 void DeploymentUnit::on_package_update(std::string updated_uid, Packager::PackageState new_state) {
@@ -81,7 +93,10 @@ auto DeploymentUnit::parent_ee() -> ExecutionEnvironment * { return ee; }
 
 auto DeploymentUnit::get_uri() const -> std::string { return config["URI"]; };
 
-auto DeploymentUnit::get_state() -> Packager::PackageState { return state; }
+auto DeploymentUnit::get_state() -> Packager::PackageState 
+{ 
+   return state; 
+}
 
 auto DeploymentUnit::get_duid() -> std::string { return uid; }
 
@@ -90,7 +105,7 @@ void DeploymentUnit::install() {
    packager->install(uid);
 }
 
-void DeploymentUnit::uninstall() {
+bool DeploymentUnit::uninstall() {
    std::cout << "DeploymentUnit.uninstall(" << get_uri() << ")" << std::endl;
    std::cout <<"      has_eu:"<<bool(eu)<<std::endl;
 
@@ -98,14 +113,14 @@ void DeploymentUnit::uninstall() {
       auto eu_state = eu->get_state();
       if (eu_state == ContainerRuntime::Undefined || eu_state == ContainerRuntime::Idle ){
          eu.reset();
-         packager->uninstall(uid);
+         return packager->uninstall(uid);
       }else{
          std::cout << "      error: cannot uninstall because EU is not Undefined or Idle"<<std::endl;
+         return false;
       }
-
-   }else{ // no EU
-      packager->uninstall(uid);
    }
+   
+   return false;
 }
 
 auto DeploymentUnit::to_json() -> nlohmann::json { return config; }
