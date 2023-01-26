@@ -7,13 +7,14 @@ This is an initial implementation. It utilizes TR-181's datamodel concept of Exe
 2. Runtime (Dobby/crun)
 
 # Build
-It assumes Linux based system. Currently tested on ubuntu/debian but has no external dependencies yet
+It assumes Linux based system. Currently tested on ubuntu/debian. By default DSM has a dependency on rbus and librbusprovider, but this can be toggled off as a build option
 
 1. Git clone project
 2. Enter main directory
 3. mkdir build
 4. cd build
 5. cmake ..
+    - if you want the rbus provider to be built add "-D ENABLE_RBUS_PROVIDER=ON" to the cmake command
 6. make, and optionally make install (usually requires sudo)
 7. go to <dsm>/build/bin, or /usr/local/bin (after install)
 8. you can see 2 executables

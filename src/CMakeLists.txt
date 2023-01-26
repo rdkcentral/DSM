@@ -24,7 +24,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 message("[./src/] CMAKE_BINARY_DIR ${CMAKE_BINARY_DIR}")
 message("[./src/] CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 
-option(ENABLE_RBUS_PROVIDER "Toggles the rbus provider to be built as part of DSM, requires librbusprovider and rbus to be installed" ON)
+option(ENABLE_RBUS_PROVIDER "Toggles the rbus provider to be built as part of DSM, requires librbusprovider and rbus to be installed" OFF)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Werror -pthread")
 message("[./src/] DSM g++ ${CMAKE_CXX_FLAGS}")
