@@ -21,7 +21,6 @@
 #include "dsm-controller.hpp"
 
 #ifdef ENABLE_RBUS_PROVIDER
-qweqwe
 #include "rbus/dsm_rbus_provider.hpp"
 #endif
 
