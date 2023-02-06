@@ -1,0 +1,13 @@
+diff --git a/src/librbusprovider/table.cpp b/src/librbusprovider/table.cpp
+index 0402720..4e42d5f 100644
+--- a/src/librbusprovider/table.cpp
++++ b/src/librbusprovider/table.cpp
+@@ -58,7 +58,7 @@ rbusError_t rbus_table::addRow([[maybe_unused]] rbusHandle_t handle,char const*
+         if (index != 0 ) {
+             std::cout << "adding row "<< index <<" to table : " << table->long_table_name << std::endl;
+             table->rows[index] = table->GetTemplateRow();
+-            *instNum =  static_cast<uint32_t>(table->rows.size());
++            *instNum =  table->rows.size();
+
+             //add any subtables for this table
+             for (auto i : table->template_sub_table){
