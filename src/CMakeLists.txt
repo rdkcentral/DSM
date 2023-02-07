@@ -20,6 +20,8 @@ cmake_minimum_required(VERSION 3.13)
 
 project(dsm_core)
 
+add_subdirectory(${CMAKE_SOURCE_DIR}/librbusprovider)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 message("[./src/] CMAKE_BINARY_DIR ${CMAKE_BINARY_DIR}")
 message("[./src/] CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
@@ -51,12 +53,10 @@ if (ENABLE_RBUS_PROVIDER)
     set(RBUS_SRC
                 "${CMAKE_SOURCE_DIR}/rbus/dsm_rbus_provider.cpp"
                 )
-
-    include_directories(SYSTEM  /usr/include/rbus /usr/include/rbus_provider)
+ 
+    include_directories(SYSTEM  /usr/include/rbus ${CMAKE_SOURCE_DIR})
     add_definitions(-DENABLE_RBUS_PROVIDER)
 endif(ENABLE_RBUS_PROVIDER)
-
-
 
 add_executable(dsm "${CMAKE_SOURCE_DIR}/main.cpp" "${DSM_SRC}" "${UTILS_SRC}" "${RBUS_SRC}")
 

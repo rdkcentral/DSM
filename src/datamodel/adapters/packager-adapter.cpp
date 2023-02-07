@@ -35,9 +35,52 @@ namespace fs = std::filesystem;
 
 #include "../../utils/file-system.hpp"
 
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <errno.h>
+#include <stdlib.h>
+
 bool is_http(std::string uri)
 {
    return (uri.substr(0,7) == "http://");
+}
+
+void PackagerAdapter::fork_exe(char* path, char *const args[], const std::function<void(void)>& fn_callback) 
+{
+  std::cout << "fork_exe path=" << path << std::endl;
+  pid_t pid;
+  int status;
+  pid_t ret;
+  //char **env = NULL;
+  //extern char **environ;
+ 
+  /* ... Sanitize arguments ... */
+ 
+  pid = fork();
+  if (pid == -1) {
+    /* Handle error */
+  } else if (pid != 0) {
+    while ((ret = waitpid(pid, &status, 0)) == -1) {
+      if (errno != EINTR) {
+        /* Handle error */
+        break;
+      }
+    }
+    if ((ret == 0) ||
+        !(WIFEXITED(status) && !WEXITSTATUS(status))) {
+      /* Report unexpected child status */
+    }
+    fn_callback();
+  } else {
+    /* ... Initialize env as a sanitized copy of environ ... */
+    int result = execv(path, args);
+    std::cout << "execve path=" << path << ", result=" << result << std::endl;
+    if (result == -1) {
+      /* Handle error */
+      _Exit(127);
+    }
+  }
 }
 
 std::string convertToLocalUri(std::string uri)
@@ -64,7 +107,7 @@ std::string convertToLocalUri(std::string uri)
       {
          localUri = uri.substr(last+1);
 
-         std::cout << "Converted to local " << localUri;
+         std::cout << "Converted to local " << localUri << std::endl;
       }
    }
 
@@ -91,6 +134,7 @@ auto load_package_config (std::string dest, std::string id) -> nlohmann::json{
 
 auto save_package_config (std::string dest, std::string id, std::string uri, std::string state, std::string path="",std::string localUri="") -> nlohmann::json{
    {
+      std::cout << "save_package_config dest=" << dest.c_str() << ", state=" << state.c_str() << std::endl;
       nlohmann::json package_data;
       package_data["id"] = id;
       package_data["uri"] = uri;
@@ -148,6 +192,49 @@ void PackagerAdapter::configure(nlohmann::json config) {
    }
 }
 
+void PackagerAdapter::wget_callback_success(std::shared_ptr<PackageData> package, std::string id, std::string uri, std::string dest, std::string localUri) 
+{
+   std::cout << "wget_callback_success" << std::endl;
+
+   // INSTALL
+
+   std::function<void(void)> fn_install_callback_success = [=]() {
+     // CLEAN UP
+     std::string delete_file_command = dest + localUri;
+     std::remove(delete_file_command.c_str());
+     std::cout << "Delete file=" << delete_file_command.c_str() << std::endl;
+   };
+
+   std::string arg1 = "-xf";
+   std::string arg2 = dest + localUri;
+   std::string arg3 = "-C";
+   std::string arg4 = dest;
+
+   char * argv_list[] = {(char*)"tar",(char*)arg1.c_str(),(char*)arg2.c_str(),
+                        (char*)arg3.c_str(), (char*)arg4.c_str(), NULL};
+
+   fork_exe((char*)"/bin/tar", argv_list, fn_install_callback_success);
+}
+
+void PackagerAdapter::fork_exe_wget(std::shared_ptr<PackageData> package, std::string id, std::string uri, std::string dest, std::string localUri) 
+{
+   std::function<void(void)> fn_wget_callback = [=]()
+   {
+      wget_callback_success(package, id, uri, dest, localUri);
+   };
+
+   std::string arg1 = "-T";
+   std::string arg2 = "3";
+   std::string arg3 = uri;
+   std::string arg4 = "-O";
+   std::string arg5 = dest + "/" + localUri;
+
+   char * argv_list[] = {(char*)"wget",(char*)arg1.c_str(),(char*)arg2.c_str(), (char*)arg3.c_str(), 
+   (char*)arg4.c_str(), (char*)arg5.c_str(), NULL};
+
+   fork_exe((char*)"/usr/bin/wget", argv_list, fn_wget_callback);
+}
+
 auto PackagerAdapter::install(std::shared_ptr<PackageData> package,std::string id, std::string uri) -> nlohmann::json {
    // nlohmann::json ret;
    // although installation is mutliple subprocesses, adapters provide only install
@@ -170,42 +257,30 @@ auto PackagerAdapter::install(std::shared_ptr<PackageData> package,std::string i
    // Replace use of wget with libcurl or similar (curlpp)
 
    // DOWNLOAD
-   std::string download_command;
-
+   
    if (is_http(uri)) // Http Download
    {
       localUri = convertToLocalUri(uri);
  
-      if (localUri != uri)
-      {
-         download_command = "wget -T 3 " + uri + " -O " + dest + "/" + localUri;
-      }
+      save_package_config(dest, id, uri, "downloading");
+
+      // Fix path of package here
+      
+
+      fork_exe_wget(package, id, uri, dest, localUri);
+
+      // Move to install (Note download errors not handled!)
+      auto package_status = save_package_config(dest, id, uri, "installing");
+
+      package->path = dest+localUri.substr(0, localUri.length()-4); // Assumes .tar --- FIXME
+
+      package_status = save_package_config(dest, id, uri, "installed", package->path,localUri);
+
+
+      return package_status;
    }
-   else // Local file (Copy)
-   {
-      std::string download = "cp " + repo + uri + " " + dest;
-   }
 
-   save_package_config(dest, id, uri, "downloading");
-   std::system(download_command.c_str());
-
-   // Move to install (Note download errors not handled!)
-   save_package_config(dest, id, uri, "installing");
-
-   // INSTALL
-   std::string install_command = "tar -xf " + dest + localUri + " -C " + dest;
-   std::system(install_command.c_str());
-
-   // Fix path of package here
-   package->path = dest+localUri.substr(0, localUri.length()-4); // Assumes .tar --- FIXME
-
-   // CLEAN UP
-   std::string cleanup_command = "rm -f " + dest + localUri;
-   std::system(cleanup_command.c_str());
-
-   auto package_status = save_package_config(dest, id, uri, "installed", package->path,localUri);
-   
-   return package_status;
+   return package_config;
 }
 
 auto PackagerAdapter::uninstall(std::string id) -> nlohmann::json {   
