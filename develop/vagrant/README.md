@@ -1,8 +1,8 @@
 # Recommended Development Workflow
 This describes the recommended workflow for developing Dobby and Dsm, although you are obviously free to use whatever tools you are most comfortable with.
 
-## 1. Building the vagrant VM
-For development on PC we are using vagrant so that all components can be built and tested in a consistent environment. The Vagrantfile now builds DSM, Dobby and USP Agent with vendor.c overlaid from our rdk repo (branch is pc_build for custom vendor.c).
+### 1. Building the vagrant VM
+For development on PC we are using vagrant so that all components can be built and tested in a consistent environment. The Vagrantfile now builds DSM and Dobby.
 
 First time:
 
@@ -14,7 +14,7 @@ You may also want to install virtualbox on your dev machine if you don't already
 sudo apt install virtualbox
 ```
 
-## 2. Setup Vagrant
+### 2. Setup Vagrant
 The Vagrant VM in the `vagrant` directory is recommended for Dobby and Dsm development. Follow the `README.md` file to set up the VM.
 
 Once the VM is created, add the VM to your SSH config by running
@@ -22,7 +22,7 @@ Once the VM is created, add the VM to your SSH config by running
 vagrant ssh-config >> ~/.ssh/config
 ```
 
-## 3. VSCode
+### 3. VSCode
 Install VSCode if you haven't got it already, and install the Remote SSH extension: https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh
 
 Now in the bottom-left corner of VSCode, click the green arrow button, then `Remote-SSH: Connect to Host` 
@@ -34,7 +34,7 @@ It is recommended to then install the following VSCode extensions if you don't a
 * CMake Tools
 * Trailing Spaces
 
-## 4. Connect to Vagrant
+### 4. Connect to Vagrant
 ```
 git clone https://github.com/rdkcentral/DSM.git
 cd DSM/develop/vagrant/
@@ -54,7 +54,7 @@ It is recommended that you create a "base" snapshot after the initial VM creatio
 ```
 vagrant snapshot save lcm-vagrant-focal base
 ```
-#to restore the VM back to the base snapshot
+to restore the VM back to the base snapshot
 ```
 vagrant snapshot restore base
 ```
@@ -99,7 +99,7 @@ sudo /usr/src/linux-headers-$(uname -r)/scripts/sign-file sha256 ./MOK.priv ./MO
 ```
 MOK.priv and MOK.der are the Machine Owner Keys you have to generate for yourself and enroll into the system. The sign-file should be shipped with your distribution or you should be able to download it in one of the packages for your distro.
 
-## 8. Building Dsm inside vagrant.
+### 8. Building Dsm inside vagrant.
 ```
 cd srcDsm/DSM/src
 mkdir build
@@ -112,7 +112,7 @@ make
 sudo make install
 ```
 
-## 9. Building Dobby inside vagrant.
+### 9. Building Dobby inside vagrant.
 ```
 cd ~/srcDobby/build
 cmake ../
@@ -120,24 +120,24 @@ make
 sudo make install
 ```
 
-### 11. Setting up a server with python to host containers
+### 10. Setting up a server with python to host containers
 ```
 sudo python3 -m http.server 8080
 
 ```
 
-### 12. Clean up any installed containers.
+### 11. Clean up any installed containers.
 ```
 rm -rf ~/destination/*
 
 ```
 
 
-### 10. Run inside vagrant DSM with Dobby and rbus
+### 12. Run inside vagrant DSM with Dobby and rbus
 ```
 vagrant ssh
 sudo DobbyDaemon --nofork
-with rbus we also need
+#with rbus we also need
 vagrant ssh
 killall -9 rtrouted;rm -fr /tmp/rtroute*;rtrouted -f -l DEBUG
 ```
@@ -149,15 +149,12 @@ dsm
 ```
 
 
-### 11. Deployment containers via rbus:
+### 13. Deployment containers via rbus:
 
 * DSM rbus provider implements installDU() with URL (mandatory) and name (optional default is "default")
 
 
-* build and install DSM
-* start rtrouted
-* start DSM ( sudo DSM )
-* rbus installDU gets called via
+* start processes see #[here](### 10. Run inside vagrant DSM with Dobby and rbus)
 
 ```
 rbuscli method_values "Device.SoftwareModules.InstallDU()" URL string http://${SERVER_IP}:8080/example_container.tar 
@@ -185,7 +182,7 @@ rbuscli getvalues "Device.SoftwareModules.ExecutionUnit."
 * check state of example_container via rbuscli getvalues "Device.SoftwareModules.ExecutionUnit." It will show status Idle
 
 
-### 12. Set EU Active and Idle state via rbus:
+### 14. Set EU Active and Idle state via rbus:
 
 DSM's functions start/stop available over RBUS SetRequestedState
 ```
@@ -195,20 +192,18 @@ rbuscli method_values "Device.SoftwareModules.ExecutionUnit.1.SetRequestedState(
 #above line is equivalent to dsmcli eu.stop <eu_id>
 ```
 
-### 13. DSM du.uninstall available over RBUS as well.
-
-Demo
+### 15. DSM du.uninstall available over RBUS as well.
 
 
+#Check via rbus
 ```
-
-Check via rbus
-
 rbuscli getvalues "Device.SoftwareModules.DeploymentUnit."
-
-uninstalled via rbus
+```
+#uninstalled via rbus
+```
 rbuscli method_noargs "Device.SoftwareModules.DeploymentUnit.1.Uninstall()"
-
-Check , It will show empty.
+```
+#Check , It will show empty.
+```
 rbuscli getvalues "Device.SoftwareModules.DeploymentUnit."
 ```
