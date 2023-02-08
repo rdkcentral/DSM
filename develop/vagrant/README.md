@@ -199,7 +199,7 @@ Check via rbus
 ```
 rbuscli getvalues "Device.SoftwareModules.DeploymentUnit."
 ```
-uninstalled via rbus
+Uninstall via rbus
 ```
 rbuscli method_noargs "Device.SoftwareModules.DeploymentUnit.1.Uninstall()"
 ```
