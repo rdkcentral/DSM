@@ -153,7 +153,7 @@ dsm
 
 * DSM rbus provider implements installDU() with URL (mandatory) and name (optional default is "default")
 
-* start processes see [here](#12)
+* start processes see section 12 above.
 
 ```
 rbuscli method_values "Device.SoftwareModules.InstallDU()" URL string http://${SERVER_IP}:8080/example_container.tar 
