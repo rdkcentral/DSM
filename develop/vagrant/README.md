@@ -103,7 +103,7 @@ MOK.priv and MOK.der are the Machine Owner Keys you have to generate for yoursel
 ```
 cd srcDsm/DSM/src
 mkdir build
-cde build
+cd build
   * build without rbus
     cmake ../..
 * build  rbus
