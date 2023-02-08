@@ -50,7 +50,7 @@ vagrant has support for taking "snapshots" of the VM filesystem. These can save 
 
 It is recommended that you create a "base" snapshot after the initial VM creation and setup , given the time that it takes to create a fresh VM and the possibility of breaking a VM in one way or another while developing.
 
-#Save a snapshot named "base" using the current name of the VM (lcm-vagrant-focal in this case)
+Save a snapshot named "base" using the current name of the VM (lcm-vagrant-focal in this case)
 ```
 vagrant snapshot save lcm-vagrant-focal base
 ```
@@ -195,15 +195,15 @@ rbuscli method_values "Device.SoftwareModules.ExecutionUnit.1.SetRequestedState(
 ### 15. DSM du.uninstall available over RBUS as well.
 
 
-#Check via rbus
+Check via rbus
 ```
 rbuscli getvalues "Device.SoftwareModules.DeploymentUnit."
 ```
-#uninstalled via rbus
+uninstalled via rbus
 ```
 rbuscli method_noargs "Device.SoftwareModules.DeploymentUnit.1.Uninstall()"
 ```
-#Check , It will show empty.
+Check , It will show empty.
 ```
 rbuscli getvalues "Device.SoftwareModules.DeploymentUnit."
 ```
