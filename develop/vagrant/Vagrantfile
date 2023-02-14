@@ -54,7 +54,7 @@ Vagrant.configure("2") do |config|
     # Copy host gitconfig
     config.vm.provision "file", source: "~/.gitconfig", destination: ".gitconfig"
     config.vm.provision "file", source: "~/.ssh", destination: "$HOME/.ssh"
-    config.vm.provision "file", source: "./scripts/patches", destination: "$HOME/patches"
+    #config.vm.provision "file", source: "./scripts/patches", destination: "$HOME/patches"
 
     # Configure git/ssh keys
     config.vm.provision "shell", privileged: false, inline: <<-SHELL
