@@ -86,6 +86,38 @@ Vagrant.configure("2") do |config|
 
 
 	config.vm.provision "shell", privileged: false, inline: <<-SHELL
+		figlet CRUN  # ASCII banner
+		mkdir ~/crun
+		cd ~/crun
+		git clone -b 1.6 --depth 1 https://github.com/containers/crun.git .
+		
+		# This patch causes ./configure to append "dirty" to the end of the version number
+		# as the source code no longer matches what's in the git repository
+		patch -p1 < ~/PrplLCM/cthulhu-crun/patches/crun/0001-Add-libcrun-get-version.patch
+		
+		./autogen.sh
+		./configure --enable-shared
+		sudo make install -j$(nproc)
+		sudo ln -f -s /usr/local/bin/crun /usr/bin/crun
+		
+		sudo mkdir -p /usr/local/include/crun
+		sudo cp ./config.h /usr/local/include/crun
+		sudo cp ./src/libcrun/container.h /usr/local/include/crun
+		sudo cp ./src/libcrun/error.h /usr/local/include/crun
+		sudo cp ./src/libcrun/status.h /usr/local/include/crun
+		
+		sudo mkdir -p /usr/local/include/crun/libocispec
+		sudo cp ./libocispec/src/*.h /usr/local/include/crun/libocispec
+		
+		sudo mkdir -p /usr/local/lib
+		sudo cp ./libocispec/.libs/libocispec.* /usr/local/lib
+		
+		# Refreshes linker to make sure the new crun and libocispec headers can be found
+		sudo ldconfig
+	SHELL
+
+
+	config.vm.provision "shell", privileged: false, inline: <<-SHELL
 		figlet libnl  # ASCII banner
 		mkdir ~/libnl
 		cd ~/libnl
@@ -138,28 +170,11 @@ Vagrant.configure("2") do |config|
 
 
 	config.vm.provision "shell", privileged: false, inline: <<-SHELL
-		figlet RBUS DEPENDENCIES  # ASCII banner
-		mkdir ~/rtmessage
-		cd ~/rtmessage
-		git clone -b RDKV_2022Q2_DUNFELL --depth 1 https://code.rdkcentral.com/r/rdk/components/opensource/rtmessage .
-		
-		cmake -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_FOR_DESKTOP=ON -DCMAKE_BUILD_TYPE=Debug
-		make -j$(nproc)
-		sudo make install -j$(nproc)
-		
-		mkdir ~/rbuscore
-		cd ~/rbuscore
-		git clone -b RDKV_2022Q2_DUNFELL --depth 1 https://code.rdkcentral.com/r/components/opensource/rbuscore .
-		
-		cmake -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_FOR_DESKTOP=ON -DCMAKE_BUILD_TYPE=Debug
-		make -j$(nproc)
-		sudo make install -j$(nproc)
-		
 		figlet RBUS  # ASCII banner
 		mkdir ~/rbus
 		cd ~/rbus
-		git clone -b RDKV_2022Q3_DUNFELL --depth 1 https://code.rdkcentral.com/r/components/opensource/rbus .
-		
+		git clone https://github.com/rdkcentral/rbus.git .
+		git checkout 0cf86c64449fec87a89a841c43becbb9a509876f
 		cmake -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_FOR_DESKTOP=ON -DCMAKE_BUILD_TYPE=Debug
 		make -j$(nproc)
 		sudo make install -j$(nproc)
