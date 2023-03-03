@@ -34,7 +34,7 @@ template_row(row_definiton) {
 
 //alias name is the table key. it can be anything but we want it to be an index starting at 1 and incrementing up to match what rbus is doing internally
 //ignore aliasName and use index somehow
-rbusError_t rbus_table::addRow([[maybe_unused]] rbusHandle_t handle,char const* tableName,[[maybe_unused]]char const* aliasName,[[maybe_unused]] uint32_t* instNum){ 
+rbusError_t rbus_table::addRow(UNUSED_CHECK rbusHandle_t handle,char const* tableName,UNUSED_CHECK char const* aliasName,UNUSED_CHECK uint32_t* instNum){ 
     std::string name (tableName);
     
     //truncate the prefix from the name, so that we end up with the table keys as the first element
@@ -71,7 +71,7 @@ rbusError_t rbus_table::addRow([[maybe_unused]] rbusHandle_t handle,char const* 
 }
 
 //row name is the full rbus name, including the table name and the alias name
-rbusError_t rbus_table::removeRow([[maybe_unused]] rbusHandle_t handle,[[maybe_unused]] char const* rowName) {
+rbusError_t rbus_table::removeRow(UNUSED_CHECK rbusHandle_t handle,UNUSED_CHECK char const* rowName) {
     
     std::string name (rowName);
     
@@ -229,7 +229,7 @@ rbus_table * rbus_table::findTable(std::vector<std::string> const & split,bool c
     return nullptr;
 }
 
-rbusError_t rbus_table::tableGetHandler ([[maybe_unused]] rbusHandle_t handle, rbusProperty_t property, [[maybe_unused]] rbusGetHandlerOptions_t* options) { 
+rbusError_t rbus_table::tableGetHandler (UNUSED_CHECK rbusHandle_t handle, rbusProperty_t property, UNUSED_CHECK rbusGetHandlerOptions_t* options) { 
     
     rbus_data * data = find(property);
     if (data != nullptr) {
@@ -239,7 +239,7 @@ rbusError_t rbus_table::tableGetHandler ([[maybe_unused]] rbusHandle_t handle, r
     return (rbusError_t::RBUS_ERROR_BUS_ERROR);
 }
 
-rbusError_t rbus_table::tableSetHandler ([[maybe_unused]] rbusHandle_t handle, rbusProperty_t property,[[maybe_unused]] rbusSetHandlerOptions_t* options) {
+rbusError_t rbus_table::tableSetHandler (UNUSED_CHECK rbusHandle_t handle, rbusProperty_t property,UNUSED_CHECK rbusSetHandlerOptions_t* options) {
     rbus_data * data = find(property);
     if (data != nullptr) {
         return (rbus_provider::setData(*data,property));
@@ -247,7 +247,7 @@ rbusError_t rbus_table::tableSetHandler ([[maybe_unused]] rbusHandle_t handle, r
     return (rbusError_t::RBUS_ERROR_BUS_ERROR);
 }
 
-rbusError_t rbus_table::tableEventHandler([[maybe_unused]] rbusHandle_t handle, rbusEventSubAction_t action, const char* eventName,[[maybe_unused]]  rbusFilter_t filter,[[maybe_unused]]  int32_t interval,[[maybe_unused]]  bool* autoPublish) {
+rbusError_t rbus_table::tableEventHandler(UNUSED_CHECK rbusHandle_t handle, rbusEventSubAction_t action, const char* eventName,UNUSED_CHECK  rbusFilter_t filter,UNUSED_CHECK  int32_t interval,UNUSED_CHECK  bool* autoPublish) {
     std::cout << "Event for table "<< eventName <<" called: action=" << (action == RBUS_EVENT_ACTION_SUBSCRIBE ? "subscribe" : "unsubscribe") << std::endl;
     return RBUS_ERROR_SUCCESS;
 }

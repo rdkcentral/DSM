@@ -201,7 +201,7 @@ rbusError_t rbus_provider::setData(rbus_data& data,rbusProperty_t property)
     return (rbusError_t::RBUS_ERROR_SUCCESS);
 }
 
-rbusError_t rbus_provider::setHandler ([[maybe_unused]] rbusHandle_t handle, [[maybe_unused]] rbusProperty_t property, [[maybe_unused]] rbusSetHandlerOptions_t* options) {
+rbusError_t rbus_provider::setHandler (UNUSED_CHECK rbusHandle_t handle, UNUSED_CHECK rbusProperty_t property, UNUSED_CHECK rbusSetHandlerOptions_t* options) {
     
     char const* const name = rbusProperty_GetName(property); 
     if (name != nullptr) {
@@ -213,7 +213,7 @@ rbusError_t rbus_provider::setHandler ([[maybe_unused]] rbusHandle_t handle, [[m
     return rbusError_t::RBUS_ERROR_BUS_ERROR;
 }
 
-rbusError_t rbus_provider::getHandler ([[maybe_unused]] rbusHandle_t handle, rbusProperty_t property, [[maybe_unused]] rbusGetHandlerOptions_t* options) { 
+rbusError_t rbus_provider::getHandler (UNUSED_CHECK rbusHandle_t handle, rbusProperty_t property, UNUSED_CHECK rbusGetHandlerOptions_t* options) { 
     char const* const name = rbusProperty_GetName(property); 
     if (name != nullptr) {
         auto const it = rbus_provider::elements.find(name);
@@ -251,7 +251,7 @@ void rbus_provider::registerTables()
     }
 }
 
-rbusError_t rbus_provider::eventSubHandler([[maybe_unused]] rbusHandle_t handle, rbusEventSubAction_t action, const char* eventName,[[maybe_unused]]  rbusFilter_t filter,[[maybe_unused]]  int32_t interval,[[maybe_unused]]  bool* autoPublish)
+rbusError_t rbus_provider::eventSubHandler(UNUSED_CHECK rbusHandle_t handle, rbusEventSubAction_t action, const char* eventName,UNUSED_CHECK  rbusFilter_t filter,UNUSED_CHECK  int32_t interval,UNUSED_CHECK  bool* autoPublish)
 {
     std::cout << (action == RBUS_EVENT_ACTION_SUBSCRIBE ? "subscribe" : "unsubscribe") << " for "<< eventName << std::endl;
     return RBUS_ERROR_SUCCESS;
