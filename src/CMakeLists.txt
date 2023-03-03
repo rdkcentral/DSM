@@ -53,8 +53,8 @@ if (ENABLE_RBUS_PROVIDER)
     set(RBUS_SRC
                 "${CMAKE_SOURCE_DIR}/rbus/dsm_rbus_provider.cpp"
                 )
- 
-    include_directories(SYSTEM  /usr/include/rbus ${CMAKE_SOURCE_DIR})
+    include(GNUInstallDirs)
+    include_directories(SYSTEM  ${OE_SYSROOT}/${CMAKE_INSTALL_OLDINCLUDEDIR}/rbus ${CMAKE_SOURCE_DIR})
     add_definitions(-DENABLE_RBUS_PROVIDER)
 endif(ENABLE_RBUS_PROVIDER)
 

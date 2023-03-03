@@ -52,7 +52,7 @@ set_target_properties(  rbusprovider PROPERTIES PREFIX ""
                         rbusprovider PROPERTIES PUBLIC_HEADER "${HEADERS}"
                      )
          
-include_directories(SYSTEM  /usr/include/rbus)
+include_directories(SYSTEM  ${OE_SYSROOT}/${CMAKE_INSTALL_OLDINCLUDEDIR}/rbus)
 target_link_libraries(rbusprovider rbus)
 
 INSTALL(TARGETS rbusprovider
