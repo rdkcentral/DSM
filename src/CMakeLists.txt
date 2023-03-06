@@ -20,8 +20,6 @@ cmake_minimum_required(VERSION 3.13)
 
 project(dsm_core)
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/librbusprovider)
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 message("[./src/] CMAKE_BINARY_DIR ${CMAKE_BINARY_DIR}")
 message("[./src/] CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
@@ -61,8 +59,12 @@ endif(ENABLE_RBUS_PROVIDER)
 add_executable(dsm "${CMAKE_SOURCE_DIR}/main.cpp" "${DSM_SRC}" "${UTILS_SRC}" "${RBUS_SRC}")
 
 if (ENABLE_RBUS_PROVIDER)
-    target_link_libraries(dsm rbus rbusprovider)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/librbusprovider)
+    target_link_libraries(dsm rbus rbusprovider DobbyClientLib IpcService systemd AppInfraLogging)
+else()
+    target_link_libraries(dsm DobbyClientLib IpcService systemd AppInfraLogging)
 endif(ENABLE_RBUS_PROVIDER)   
+
 
 add_executable(dsmcli "${CMAKE_SOURCE_DIR}/dsm-cli.cpp")
 
