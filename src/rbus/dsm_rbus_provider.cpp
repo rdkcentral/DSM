@@ -1,5 +1,6 @@
 #include "dsm_rbus_provider.hpp"
 #include <librbusprovider/utility.h>
+#include <librbusprovider/rbus_macros.h>
 
 #include "../dsm-controller.hpp"
 
@@ -72,7 +73,7 @@ dsm_rbus_provider::dsm_rbus_provider(DSMController & controller)
    du_sync_table_init();
    eu_sync_table_init();
    //ee_worker = std::make_unique<std::thread>(ee_worker_fn,this);
-   du_eu_worker = std::make_unique<std::thread>(du_eu_worker_fn,this);
+   du_eu_worker = std::unique_ptr<std::thread>(new std::thread(du_eu_worker_fn,this));
    rbusEvent_Subscribe(rbusHandle,"ee_external_change",ee_external_change_handler,nullptr,0);
    rbusEvent_Subscribe(rbusHandle,"du_external_change",du_external_change_handler,nullptr,0);
    rbusEvent_Subscribe(rbusHandle,"eu_external_change",eu_external_change_handler,nullptr,0);
@@ -85,7 +86,9 @@ dsm_rbus_provider::~dsm_rbus_provider() {
 
    //NOTE: if mirroring of tables is achieved in a different way to the mock , as we are in the same program space as the deployment units in this case , this may change and unsubscribing may not be required
    for(auto& row : DU.rows)  {
-      for(auto &[value,data] : DU.GetTemplateRow()) {
+      for(const auto & ref : DU.GetTemplateRow()) {
+         const auto & value = ref.first;
+         //const auto & data = ref.second;
          std::string path = std::string(DEVICE_SM_PREFIX "DeploymentUnit.") + std::to_string(row.first) + std::string(".") + value;
          rbusEvent_Unsubscribe(rbusHandle,path.c_str());
       }
@@ -180,8 +183,10 @@ void dsm_rbus_provider::uninstall(rbusObject_t inParams, rbusMethodAsyncHandle_t
    if( reqIndex!=nullptr && rbusValue_GetType(reqIndex)==rbusValueType_t::RBUS_UINT32 ) 
    {
       auto index = rbusValue_GetUInt32(reqIndex);
-      for (const auto& [key, value] : rbus_du_instance_map)
+      for (const auto& ref : rbus_du_instance_map)
       {
+         const auto & key = ref.first;
+         const auto & value = ref.second;
          if (value == index)
          {
             bool is_url_valid = isValidURL(key);
@@ -279,7 +284,7 @@ bool dsm_rbus_provider::isValidURL(std::string url)
   }
 }
 
-rbusError_t dsm_rbus_provider::methodHandler([[maybe_unused]] rbusHandle_t handle, char const* methodName, rbusObject_t inParams, [[maybe_unused]] rbusObject_t outParams, rbusMethodAsyncHandle_t asyncHandle) {
+rbusError_t dsm_rbus_provider::methodHandler(UNUSED_CHECK rbusHandle_t handle, char const* methodName, rbusObject_t inParams, UNUSED_CHECK rbusObject_t outParams, rbusMethodAsyncHandle_t asyncHandle) {
    if (strcmp(methodName,"Device.SoftwareModules.InstallDU()") == 0) {
       rbusObject_Retain(inParams);
       try {
@@ -296,7 +301,7 @@ rbusError_t dsm_rbus_provider::methodHandler([[maybe_unused]] rbusHandle_t handl
    return RBUS_ERROR_BUS_ERROR;
 }
 
-void dsm_rbus_provider::stateChangeHandler([[maybe_unused]]rbusHandle_t handle, rbusEvent_t const* event,[[maybe_unused]] rbusEventSubscription_t* subscription) {   
+void dsm_rbus_provider::stateChangeHandler(UNUSED_CHECK rbusHandle_t handle, rbusEvent_t const* event,UNUSED_CHECK rbusEventSubscription_t* subscription) {   
    rbusEvent_t duevent {};
    rbusObject_t data;
    rbusValue_t val,faultc,faultstr,resolved,startTime,completeTime;
@@ -450,7 +455,7 @@ void dsm_rbus_provider::updateDU(rbusObject_t inParams, rbusMethodAsyncHandle_t 
    rbusObject_Release(outParams);
 }
 
-rbusError_t rbus_table::tableMethodHandler ([[maybe_unused]] rbusHandle_t handle, [[maybe_unused]] char const* methodName,[[maybe_unused]] rbusObject_t inParams,[[maybe_unused]] rbusObject_t outParams, [[maybe_unused]] rbusMethodAsyncHandle_t asyncHandle) {
+rbusError_t rbus_table::tableMethodHandler (UNUSED_CHECK rbusHandle_t handle, UNUSED_CHECK char const* methodName,UNUSED_CHECK rbusObject_t inParams,UNUSED_CHECK rbusObject_t outParams, UNUSED_CHECK rbusMethodAsyncHandle_t asyncHandle) {
 
    std::string name (methodName);
    //truncate the prefix from the name, so that we end up with the table keys as the first element
@@ -897,7 +902,7 @@ void dsm_rbus_provider::eu_sync_table_init() {
 /*
 * event handler for the ee_external_change event. Makes the relevant changes in dsm when a change is made in rbus
 */
-void dsm_rbus_provider::ee_external_change_handler([[maybe_unused]]rbusHandle_t handle, rbusEvent_t const* event,[[maybe_unused]] rbusEventSubscription_t* subscription) 
+void dsm_rbus_provider::ee_external_change_handler(UNUSED_CHECK rbusHandle_t handle, rbusEvent_t const* event,UNUSED_CHECK rbusEventSubscription_t* subscription) 
 {
    std::cout << "dsm_rbus_provider::ee_external_change_handler" << std::endl;
 
@@ -935,14 +940,14 @@ void dsm_rbus_provider::ee_external_change_handler([[maybe_unused]]rbusHandle_t 
 /*
 * event handler for the du_external_change event. Makes the relevant changes in dsm when a change is made in rbus
 */
-void dsm_rbus_provider::du_external_change_handler([[maybe_unused]]rbusHandle_t handle, rbusEvent_t const* event,[[maybe_unused]] rbusEventSubscription_t* subscription) 
+void dsm_rbus_provider::du_external_change_handler(UNUSED_CHECK rbusHandle_t handle, rbusEvent_t const* event,UNUSED_CHECK rbusEventSubscription_t* subscription) 
 {
    std::cout << "dsm_rbus_provider::du_external_change_handler" << std::endl;
 }
 /*
 * event handler for the eu_external_change event. Makes the relevant changes in dsm when a change is made in rbus
 */
-void dsm_rbus_provider::eu_external_change_handler([[maybe_unused]]rbusHandle_t handle, rbusEvent_t const* event,[[maybe_unused]] rbusEventSubscription_t* subscription) 
+void dsm_rbus_provider::eu_external_change_handler(UNUSED_CHECK rbusHandle_t handle, rbusEvent_t const* event,UNUSED_CHECK rbusEventSubscription_t* subscription) 
 {
    std::cout << "dsm_rbus_provider::eu_external_change_handler" << std::endl;
 }

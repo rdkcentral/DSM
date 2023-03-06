@@ -22,6 +22,7 @@
 #include <map>
 #include <cstdint>
 #include <thread>
+#include "rbus_macros.h"
 #include "table.h"
 
 struct rbus_data {
@@ -57,10 +58,10 @@ public:
 
     static std::map<std::string,rbus_table> tables;
 
-    [[nodiscard]] static rbusError_t getHandler (rbusHandle_t handle, rbusProperty_t property, rbusGetHandlerOptions_t* options);
-    [[nodiscard]] static rbusError_t setHandler (rbusHandle_t handle, rbusProperty_t property, rbusSetHandlerOptions_t* options);
-    [[nodiscard]] static rbusError_t eventSubHandler(rbusHandle_t handle, rbusEventSubAction_t action, const char* eventName,rbusFilter_t filter,int32_t interval,bool* autoPublish);
-    [[nodiscard]] static rbusError_t setData(rbus_data& data,rbusProperty_t property);
+    UNUSED_RESULT_CHECK static rbusError_t getHandler (rbusHandle_t handle, rbusProperty_t property, rbusGetHandlerOptions_t* options);
+    UNUSED_RESULT_CHECK static rbusError_t setHandler (rbusHandle_t handle, rbusProperty_t property, rbusSetHandlerOptions_t* options);
+    UNUSED_RESULT_CHECK static rbusError_t eventSubHandler(rbusHandle_t handle, rbusEventSubAction_t action, const char* eventName,rbusFilter_t filter,int32_t interval,bool* autoPublish);
+    UNUSED_RESULT_CHECK static rbusError_t setData(rbus_data& data,rbusProperty_t property);
     static void getData(rbus_data& data,rbusProperty_t property);
 
 protected:

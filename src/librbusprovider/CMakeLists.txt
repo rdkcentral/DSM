@@ -31,10 +31,16 @@ if (ENABLE_STATIC_ANALYSIS)
     set(CMAKE_CXX_CLANG_TIDY clang-tidy -checks=*,clang-analyzer-*,-readability-*,-fuchsia-*,-google-*,-modernize-use-trailing-return-type,-llvm-include-order)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -pthread ")
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -Werror -Wshadow -Wnon-virtual-dtor -Wconversion -Wduplicated-cond -Wduplicated-branches  -Wlogical-op -Wnull-dereference -Wuseless-cast -Wformat=2 -pthread ") 
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -Werror -Wshadow -Wformat=2 -pthread ") 
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        # require at least gcc 7.4 for these checks
+        if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.4)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnon-virtual-dtor -Wconversion -Wduplicated-cond -Wduplicated-branches  -Wlogical-op -Wnull-dereference -Wuseless-cast ") 
+        endif()
+    endif()
 endif(ENABLE_STATIC_ANALYSIS)
 
-set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD 11)
 
 FILE(GLOB SRC "./*.cpp")
 FILE(GLOB HEADERS "./*.h")
@@ -46,7 +52,7 @@ set_target_properties(  rbusprovider PROPERTIES PREFIX ""
                         rbusprovider PROPERTIES PUBLIC_HEADER "${HEADERS}"
                      )
          
-include_directories(SYSTEM  /usr/include/rbus)
+include_directories(SYSTEM  ${OE_SYSROOT}/${CMAKE_INSTALL_OLDINCLUDEDIR}/rbus)
 target_link_libraries(rbusprovider rbus)
 
 INSTALL(TARGETS rbusprovider

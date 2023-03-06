@@ -15,6 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "rbus_macros.h"
 #include "provider.h"
 #include <vector>
 
@@ -49,21 +50,21 @@ private:
     
     
     //find functions return nullptr if not found
-    [[nodiscard]] static rbus_data  * find(rbusProperty_t property);
-    [[nodiscard]] static rbus_table * findTable(rbusProperty_t property,bool contains_value); //set bool to true if the string contains the value as well as the tables
-    [[nodiscard]] static rbus_table * findTable(std::string const & name,bool contains_value);
-    [[nodiscard]] static rbus_table * findTable(std::vector<std::string> const & split,bool contains_value);
+    UNUSED_RESULT_CHECK static rbus_data  * find(rbusProperty_t property);
+    UNUSED_RESULT_CHECK static rbus_table * findTable(rbusProperty_t property,bool contains_value); //set bool to true if the string contains the value as well as the tables
+    UNUSED_RESULT_CHECK static rbus_table * findTable(std::string const & name,bool contains_value);
+    UNUSED_RESULT_CHECK static rbus_table * findTable(std::vector<std::string> const & split,bool contains_value);
     void setElements(std::vector<rbusDataElement_t>& elements);
-    [[nodiscard]] static size_t getTableIndex(std::string const& in);
+    UNUSED_RESULT_CHECK static size_t getTableIndex(std::string const& in);
 
 //getters/setters need to be public otherwise they can't be used as function pointers
 public:
-    [[nodiscard]] static rbusError_t addRow(rbusHandle_t handle,char const* tableName,char const* aliasName, uint32_t* instNum);
-    [[nodiscard]] static rbusError_t removeRow(rbusHandle_t handle, char const* rowName);
-    [[nodiscard]] static rbusError_t tableGetHandler (rbusHandle_t handle, rbusProperty_t property, rbusGetHandlerOptions_t* options);
-    [[nodiscard]] static rbusError_t tableSetHandler (rbusHandle_t handle, rbusProperty_t property,rbusSetHandlerOptions_t* options);
-    [[nodiscard]] static rbusError_t tableEventHandler(rbusHandle_t handle, rbusEventSubAction_t action, const char* eventName, rbusFilter_t filter, int32_t interval, bool* autoPublish);
-    [[nodiscard]] static rbusError_t tableMethodHandler (rbusHandle_t handle, char const* methodName, rbusObject_t inParams, rbusObject_t outParams, rbusMethodAsyncHandle_t asyncHandle);
+    UNUSED_RESULT_CHECK static rbusError_t addRow(rbusHandle_t handle,char const* tableName,char const* aliasName, uint32_t* instNum);
+    UNUSED_RESULT_CHECK static rbusError_t removeRow(rbusHandle_t handle, char const* rowName);
+    UNUSED_RESULT_CHECK static rbusError_t tableGetHandler (rbusHandle_t handle, rbusProperty_t property, rbusGetHandlerOptions_t* options);
+    UNUSED_RESULT_CHECK static rbusError_t tableSetHandler (rbusHandle_t handle, rbusProperty_t property,rbusSetHandlerOptions_t* options);
+    UNUSED_RESULT_CHECK static rbusError_t tableEventHandler(rbusHandle_t handle, rbusEventSubAction_t action, const char* eventName, rbusFilter_t filter, int32_t interval, bool* autoPublish);
+    UNUSED_RESULT_CHECK static rbusError_t tableMethodHandler (rbusHandle_t handle, char const* methodName, rbusObject_t inParams, rbusObject_t outParams, rbusMethodAsyncHandle_t asyncHandle);
 
 };
 

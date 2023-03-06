@@ -28,9 +28,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
-
-#include <filesystem>
-namespace fs = std::filesystem;
+#include <ftw.h>
 
 
 #include "../../utils/file-system.hpp"
@@ -283,6 +281,14 @@ auto PackagerAdapter::install(std::shared_ptr<PackageData> package,std::string i
    return package_config;
 }
 
+static int ftw_callback(const char *path, const struct stat *sb, int flag, struct FTW *buf){
+   int ret = remove(path);
+   if (ret) { //assume empty dir
+      ret = unlink(path);
+   }
+   return ret;
+}
+
 auto PackagerAdapter::uninstall(std::string id) -> nlohmann::json {   
    auto dest = std::string(config["destination"]) + "/";
    std::cout << "PackagerAdapter::uninstall(" << dest+ id + ".json"
@@ -294,7 +300,8 @@ auto PackagerAdapter::uninstall(std::string id) -> nlohmann::json {
    save_package_config(dest, id, uri, "uninstalling");
 
    std::string path = package_config["path"];
-   fs::remove_all(path);
+   nftw(path.c_str(), ftw_callback, 64, FTW_DEPTH | FTW_PHYS);
+   remove(path.c_str());
 
    auto package_status = delete_package_config(dest, id, uri, "uninstalled",path,convertToLocalUri(id));
    return package_status;
