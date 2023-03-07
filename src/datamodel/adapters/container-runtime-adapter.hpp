@@ -23,6 +23,10 @@
 
 #include "../../ext/json.hpp"
 
+#include <Dobby/DobbyProtocol.h>
+#include <Dobby/Public/Dobby/IDobbyProxy.h>
+
+
 class ContainerRuntimeAdapter {
    nlohmann::json config;
 
@@ -41,6 +45,8 @@ class ContainerRuntimeAdapter {
    auto list() -> nlohmann::json;  
 
    bool use_dobby; // True by default, use crun if false
+   std::shared_ptr<AI_IPC::IIpcService> mIpcService; // Ipc Service instance
+   std::shared_ptr<IDobbyProxy> mDobbyProxy; // DobbyProxy instance
 };
 
 #endif
