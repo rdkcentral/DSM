@@ -58,7 +58,12 @@ rbusError_t rbus_table::addRow(UNUSED_CHECK rbusHandle_t handle,char const* tabl
         if (index != 0 ) {
             std::cout << "adding row "<< index <<" to table : " << table->long_table_name << std::endl;
             table->rows[index] = table->GetTemplateRow();
+//use cast on 64 bit, cast may cause warnings due to being usless on 32bit
+#if INTPTR_MAX == INT64_MAX
             *instNum =  static_cast<uint32_t>(table->rows.size());
+#elif INTPTR_MAX == INT32_MAX
+            *instNum =  table->rows.size();
+#endif
 
             //add any subtables for this table
             for (auto i : table->template_sub_table){
