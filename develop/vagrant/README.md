@@ -147,9 +147,17 @@ vagrant ssh
 dsm
 
 ```
+### 13 Setup usp inside vagrant
 
+* We also need start processes section 12 above and this section start as well.
+```
+vagrant ssh
+obuspa -i enp0s8
+vagrant ssh
+obuspa -c show datamodel | grep SoftwareModules
+```
 
-### 13. Deployment containers via rbus:
+### 14. Deployment containers via rbus:
 
 * DSM rbus provider implements installDU() with URL (mandatory) and name (optional default is "default")
 
@@ -180,8 +188,38 @@ rbuscli getvalues "Device.SoftwareModules.ExecutionUnit."
 * Stop example_container container dsmcli eu.stop <eu_id>
 * check state of example_container via rbuscli getvalues "Device.SoftwareModules.ExecutionUnit." It will show status Idle
 
+### 15. Deployment containers via usp:
 
-### 14. Set EU Active and Idle state via rbus:
+* start processes see section 13 above.
+
+```
+obuspa -c operate "Device.SoftwareModules.InstallDU(ExecutionEnvRef=test,UUID=sleepy,URL=http://${SERVER_IP}:8080/example_container.tar)"
+```
+ExecutionEnvRef string test
+* check state of example_container via
+
+Check container gets deployed .
+ls -al ~destination/
+
+```
+obuspa -c get Device.SoftwareModules.DeploymentUnit.
+```
+  It will show status Idle.
+* start example_container container dsmcli eu.start <eu_id>
+* check state of example_container via
+
+```
+obuspa -c get Device.SoftwareModules.ExecutionUnit.
+```
+  It will show status Active.
+* dsmcli eu.detail <eu_id> will show status Active.
+* sudo DobbyTool list will show container example_container running.
+* Stop example_container container dsmcli eu.stop <eu_id>
+* check state of example_container via obuspa -c get Device.SoftwareModules.ExecutionUnit.." It will show status Idle
+
+
+
+### 16. Set EU Active and Idle state via rbus:
 
 DSM's functions start/stop available over RBUS SetRequestedState
 ```
@@ -191,7 +229,17 @@ rbuscli method_values "Device.SoftwareModules.ExecutionUnit.1.SetRequestedState(
 #above line is equivalent to dsmcli eu.stop <eu_id>
 ```
 
-### 15. DSM du.uninstall available over RBUS as well.
+### 17. Set EU Active and Idle state via usp:
+
+DSM's functions start/stop available over USP SetRequestedState
+```
+obuspa -c operate "Device.SoftwareModules.ExecutionUnit.1.SetRequestedState(RequestedState=Active)"
+#above line is equivalent to dsmcli eu.start <eu_id>
+obuspa -c operate "Device.SoftwareModules.ExecutionUnit.1.SetRequestedState(RequestedState=Idle)"
+#above line is equivalent to dsmcli eu.stop <eu_id>
+```
+
+### 18. DSM du.uninstall available over RBUS as well.
 
 
 Check via rbus
@@ -205,4 +253,20 @@ rbuscli method_noargs "Device.SoftwareModules.DeploymentUnit.1.Uninstall()"
 Check , It will show empty.
 ```
 rbuscli getvalues "Device.SoftwareModules.DeploymentUnit."
+```
+
+### 19. DSM du.uninstall available over USP as well.
+
+
+Check via usp
+```
+obuspa -c get Device.SoftwareModules.DeploymentUnit.
+```
+Uninstall via rbus
+```
+obuspa -c operate "Device.SoftwareModules.DeploymentUnit.1.Uninstall()"
+```
+Check , It will show empty.
+```
+obuspa -c get Device.SoftwareModules.DeploymentUnit.
 ```

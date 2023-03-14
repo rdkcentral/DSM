@@ -1,0 +1,13 @@
+# Source: Consult red
+
+diff --git a/src/vendor/vendor.am b/src/vendor/vendor.am
+index c118847..b557331 100644
+--- a/src/vendor/vendor.am
++++ b/src/vendor/vendor.am
+@@ -4,4 +4,6 @@ SOURCES += src/vendor/vendor.c \
+ 
+ # Add extra vendor specific CPP or LD flags below
+ 
++obuspa_CPPFLAGS +=              -isystem/usr/include/rbus
++obuspa_LDADD += -lrbus
+ 
