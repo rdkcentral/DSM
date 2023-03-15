@@ -164,8 +164,8 @@ void dsm_rbus_provider::installDU(rbusObject_t inParams, rbusMethodAsyncHandle_t
    rbusValue_Release(stat);
 
    //async handle passthrough
-   rbusValue_t handle = rbusObject_GetValue(inParams,"asynchandle");
-   if(handle!=nullptr) { rbusObject_SetValue(outParams,"asynchandle",handle); }
+   rbusValue_t handle = rbusObject_GetValue(inParams,"uspasynchandle");
+   if(handle!=nullptr) { rbusObject_SetValue(outParams,"uspasynchandle",handle); }
 
    rbusError_t sent = rbusMethod_SendAsyncResponse(asyncHandle,ec,outParams);
    if(sent != RBUS_ERROR_SUCCESS) { std::cerr << "Failed to return result from async method\n"; } 
@@ -202,6 +202,9 @@ void dsm_rbus_provider::uninstall(rbusObject_t inParams, rbusMethodAsyncHandle_t
                auto ret_json_str = dsm_ret_val.dump();
                rbusValue_SetString(ret,ret_json_str.c_str());
                rbusObject_SetValue(outParams,"Ret",ret);
+               //async handle passthrough
+               rbusValue_t handle = rbusObject_GetValue(inParams,"uspasynchandle");
+               if(handle!=nullptr) { rbusObject_SetValue(outParams,"uspasynchandle",handle); }
                return;
             }
          }
@@ -445,8 +448,8 @@ void dsm_rbus_provider::updateDU(rbusObject_t inParams, rbusMethodAsyncHandle_t 
 
 
    //async handle passthrough
-   rbusValue_t handle = rbusObject_GetValue(inParams,"asynchandle");
-   if(handle!=nullptr) { rbusObject_SetValue(outParams,"asynchandle",handle); }
+   rbusValue_t handle = rbusObject_GetValue(inParams,"uspasynchandle");
+   if(handle!=nullptr) { rbusObject_SetValue(outParams,"uspasynchandle",handle); }
 
    rbusError_t sent = rbusMethod_SendAsyncResponse(asyncHandle,ec,outParams);
    if(sent != RBUS_ERROR_SUCCESS) { std::cerr << "Failed to return result from async method\n"; } 
