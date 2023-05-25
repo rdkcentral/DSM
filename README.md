@@ -11,13 +11,12 @@ It assumes Linux based system. Currently tested on ubuntu/debian. DSM has an opt
 
 1. Git clone project
 2. Enter main directory
-3. mkdir build
-4. cd build
-5. cmake ..
+3. `mkdir build; cd build`
+4. `cmake .`.
     - if you want the rbus provider to be built add "-D ENABLE_RBUS_PROVIDER=ON" to the cmake command
-6. make, and optionally make install (usually requires sudo)
-7. go to <dsm>/build/bin, or /usr/local/bin (after install)
-8. you can see 2 executables
+5. make, and optionally make install (usually requires sudo)
+6. go to <dsm>/build/bin, or /usr/local/bin (after install)
+7. you can see 2 executables
     - dsm - this is main daemon with management logic
     - dsmcli - this is cli connecting to dsm over socket and executing commands
 
@@ -35,20 +34,20 @@ Although to build the project dependencies are not required. Dobby is required i
 export DSM_CONFIG_FILE=<full_path_of_dsm.config> e.g. /home/vagrant/dsm.config (This is set by default in Vagrant VM, see src/dsm.config for an example)
 If using vagrant VM you may need to first start RBUS with ` rtrouted -f -l DEBUGD` before running `dsm`
 
-1. Start dsm, % dsm
+1. Start dsm, % `dsm`
 2. Give commands to dsm
-    - % dsmcli eu.list
-    - % dsmcli du.list
-    - % dsmcli du.install [target execution env] [package name/url]
-    - % dsmcli du.list
-    - % dsmcli du.detail [package name]
-    - % dsmcli eu.list
-    - % dsmcli eu.detail [uid]
-    - % dsmcli eu.start [uid]
-    - % dsmcli du.detail [uid]
+    - % `dsmcli eu.list`
+    - % `dsmcli du.list`
+    - % `dsmcli du.install [target execution env] [package name/url]`
+    - % `dsmcli du.list`
+    - % `dsmcli du.detail [package name]`
+    - % `dsmcli eu.list`
+    - % `dsmcli eu.detail [uid]`
+    - % `dsmcli eu.start [uid]`
+    - % `dsmcli du.detail [uid]`
     - you can check also use DobbyTool list and DobbyTool info
-    - % dsmcli eu.stop [uid]
-    - % dsmcli du.detail [uid]
+    - % `dsmcli eu.stop [uid]`
+    - % `dsmcli du.detail [uid]`
     
 # Idea
 DSM is a server with controller that manages status with concept of Execution Environments, Deployment Units and Execution Units. It uses Packager and Runtime to translate commands. Each technology e.g. TAR packager, Dobby/crun runtime are attached by adapters
