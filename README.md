@@ -32,7 +32,7 @@ Although to build the project dependencies are not required. Dobby is required i
 
 # Use
 export DSM_CONFIG_FILE=<full_path_of_dsm.config> e.g. /home/vagrant/dsm.config (This is set by default in Vagrant VM, see src/dsm.config for an example).  
-If using vagrant VM you may need to first start RBUS with ` rtrouted -f -l DEBUGD` before running `dsm`
+If using vagrant VM you may need to first start RBUS with ` rtrouted -f -l DEBUG` before running `dsm`. If you need to restart rtrouted run `killall -9 rtrouted; rm -fr /tmp/rtroute*; rtrouted -f -l DEBUG`
 
 1. Start dsm, % `dsm`
 2. Give commands to dsm
