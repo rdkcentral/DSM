@@ -347,8 +347,7 @@ void dsm_rbus_provider::stateChangeHandler(UNUSED_CHECK rbusHandle_t handle, rbu
 
    rbusDateTime_t end_time {};
    time_t now = time(nullptr);
-   struct tm * temp_tm = std::gmtime(&now);
-   end_time.m_time = *temp_tm;
+   rbusValue_MarshallTMtoRBUS(&end_time, std::gmtime(&now));
 
    rbusValue_SetTime(completeTime,&end_time);
 
