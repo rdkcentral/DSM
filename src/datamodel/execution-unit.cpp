@@ -19,7 +19,6 @@
 #include "execution-unit.hpp"
 #include "../utils/uuid_generator.hpp"
 #include <iostream>
-
 ExecutionUnit::ExecutionUnit(ExecutionEnvironment *parent_ee, DeploymentUnit *parent_du)
         :ee(parent_ee),
          du(parent_du),
@@ -31,26 +30,47 @@ ExecutionUnit::ExecutionUnit(ExecutionEnvironment *parent_ee, DeploymentUnit *pa
     
 }
 
+ExecutionUnit::~ExecutionUnit()
+{
+    std::cout<< "<<destroy>> ExecutionUnit ["<< uid <<"]" <<std::endl;
+}
+
 void ExecutionUnit::start(){
     std::cout<<"["<<uid<<"].ExecutionUnit::start(path:"<<du->get_eu_path()<<")" << std::endl;
     ee->get_runtime()->start(uid, du->get_eu_path());
+    state = ContainerRuntime::Starting;
 }
 
 void ExecutionUnit::stop(){
     std::cout<<"["<<uid<<"].ExecutionUnit::stop(path:"<<du->get_eu_path()<<")" << std::endl;
     ee->get_runtime()->stop(uid);
+    state = ContainerRuntime::Stopping;
 }
 
 auto ExecutionUnit::get_state() -> ContainerRuntime::ContainerState {
-    // std::cout<< "ExecutionUnit::get_state() uid="<<uid<<std::endl;
     ContainerRuntime *runtime = ee->get_runtime();
-    auto state =  runtime->getInfo(uid)["status"];
-    if (state == "Idle") return ContainerRuntime::Idle;
-    if (state == "Active") return ContainerRuntime::Active;
-    if (state == "Starting") return ContainerRuntime::Starting;
-    if (state == "Stopping") return ContainerRuntime::Stopping;
+    auto info =  runtime->getInfo(uid);
+    std::string state =  info["status"];
+    std::cout<< "ExecutionUnit::get_state state=" << state.c_str() << std::endl;
+    if (state == "Idle") 
+    {
+        return ContainerRuntime::Idle;
+    }
+    if (state == "Active")
+    {
+      return ContainerRuntime::Active;  
+    } 
+    if (state == "Starting") 
+    {
+        return ContainerRuntime::Starting;
+    }
+    if (state == "Stopping") 
+    {
+        return ContainerRuntime::Stopping;
+    }
     return ContainerRuntime::Undefined;
 }
+
 
 auto ExecutionUnit::get_detail() -> nlohmann::json {
     ContainerRuntime *runtime = ee->get_runtime();

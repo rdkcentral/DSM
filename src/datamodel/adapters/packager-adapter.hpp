@@ -38,6 +38,10 @@ class PackagerAdapter {
    auto is_installed(std::string id) -> bool;
    auto list() -> nlohmann::json;
    auto check_executable(std::string id) -> nlohmann::json;
+   private:
+   void fork_exe(char* path, char *const args[], const std::function<void()>& fn_callback);
+   void fork_exe_wget(std::shared_ptr<PackageData> package, std::string id, std::string uri, std::string dest, std::string localUri);
+   void wget_callback_success(std::shared_ptr<PackageData> package, std::string id, std::string uri, std::string dest, std::string localUri);
 };
 
 #endif

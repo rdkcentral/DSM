@@ -11,7 +11,7 @@ index 7512a10..0e6b34e 100755
 +#define INCLUDE_LCM_DATAMODEL
 +
 +#ifdef    INCLUDE_LCM_DATAMODEL
-+#include "lcm_datamodel.c"
++#include "lcm_rbus_datamodel.c"
 +#endif
 +
  /*********************************************************************//**

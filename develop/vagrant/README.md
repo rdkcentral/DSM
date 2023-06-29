@@ -1,7 +1,20 @@
 # Recommended Development Workflow
 This describes the recommended workflow for developing Dobby and Dsm, although you are obviously free to use whatever tools you are most comfortable with.
 
-## 1. Setup Vagrant
+### 1. Building the vagrant VM
+For development on PC we are using vagrant so that all components can be built and tested in a consistent environment. The Vagrantfile now builds DSM and Dobby.
+
+First time:
+
+```
+sudo apt install vagrant
+```
+You may also want to install virtualbox on your dev machine if you don't already have it:
+```
+sudo apt install virtualbox
+```
+
+### 2. Setup Vagrant
 The Vagrant VM in the `vagrant` directory is recommended for Dobby and Dsm development. Follow the `README.md` file to set up the VM.
 
 Once the VM is created, add the VM to your SSH config by running
@@ -9,10 +22,10 @@ Once the VM is created, add the VM to your SSH config by running
 vagrant ssh-config >> ~/.ssh/config
 ```
 
-## 2. VSCode
+### 3. VSCode
 Install VSCode if you haven't got it already, and install the Remote SSH extension: https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh
 
-Now in the bottom-left corner of VSCode, click the green arrow button, then `Remote-SSH: Connect to Host` and select `dobby-vagrant`. A new VSCode window will open. In this window, open the `~/srcDobby` and/or 'srcDsm' directories.
+Now in the bottom-left corner of VSCode, click the green arrow button, then `Remote-SSH: Connect to Host` 
 
 It is recommended to then install the following VSCode extensions if you don't already have them:
 
@@ -21,24 +34,239 @@ It is recommended to then install the following VSCode extensions if you don't a
 * CMake Tools
 * Trailing Spaces
 
-Now make any changes and rebuild from the command line:
-### Rebuilding Dobby
+### 4. Connect to Vagrant
 ```
-cd ~/srcDobby/build
-cmake -DCMAKE_BUILD_TYPE=Debug -DRDK_PLATFORM=DEV_VM ../
-make -j$(nproc)
+git clone https://github.com/rdkcentral/DSM.git
+cd DSM/develop/vagrant/
+To connect to the running VM (note: this must be done from the DSM/develop/vagrant/ directory):
+vagrant up
+vagrant ssh
 ```
-### Rebuilding Dsm
+
+
+### 5. Take vagrant snapshot
+
+vagrant has support for taking "snapshots" of the VM filesystem. These can save and restore the state of the VM allowing you to return it to a previous condition
+
+It is recommended that you create a "base" snapshot after the initial VM creation and setup , given the time that it takes to create a fresh VM and the possibility of breaking a VM in one way or another while developing.
+
+Save a snapshot named "base" using the current name of the VM (lcm-vagrant-focal in this case)
 ```
-cd ~/srcDsm/rdk-smart-router/dsm/build/
+vagrant snapshot save lcm-vagrant-focal base
+```
+to restore the VM back to the base snapshot
+```
+vagrant snapshot restore base
+```
+Please be careful when restoring and make sure any changes you want to keep i.e. local commits or changes to files and configs are backed up elsewhere, as the restore command will wipe them when it restores the base image.
+
+### 6. Re-provisioning vagrant 
+At some points during development it may be desirable to re-run all the provisioners, i.e. after a change to the vagrant scripts has added new components or updated the versions of existing components
+
+re-running provisioners is possible by running
+```
+vagrant reload --provision
+
+```
+
+### 7. Build issues you may encounter for vagrant:
+The version of vagrant-libvirt that had been installed on my system when I used "sudo apt install vagrant" was old and it failed to update it automagically.
+so I had to
+
+```
+sudo apt remove vagrant-libvirt
+```
+After that, use following command to install vagrant libvirt plugin
+
+```
+vagrant plugin install vagrant-libvirt
+```
+Hit an error caused by unknown configuration section 'disksize'
+
+There are errors in the configuration of this machine. Please fix
+the following errors and try again:
+  
+Vagrant:
+* Unknown configuration section 'disksize'.
+I manually installed the plugin for disksize
+
+```
+vagrant plugin install vagrant-disksize
+```
+If your Linux flavour has Secure Boot enabled, you will be required to sign the modules of the VM libs of the provider. You can use the following command to do so
+```
+sudo /usr/src/linux-headers-$(uname -r)/scripts/sign-file sha256 ./MOK.priv ./MOK.der $(modinfo -n MODNAME)
+```
+MOK.priv and MOK.der are the Machine Owner Keys you have to generate for yourself and enroll into the system. The sign-file should be shipped with your distribution or you should be able to download it in one of the packages for your distro.
+
+### 8. Building Dsm inside vagrant.
+```
+cd srcDsm/DSM/src
+mkdir build
+cd build
+  * build without rbus
+    cmake ../..
+* build  rbus
+    cmake ../.. -D ENABLE_RBUS_PROVIDER=ON
 make
 sudo make install
 ```
 
-It is possible to add build-time arguments to CMake when using the "Build" button in VSCode (e.g. to make sure the platform is set to DEV_VM). Open/create the file .vscode/settings.
-json and add the following JSON section:
-```json
-"cmake.configureArgs": [
-    "-DRDK_PLATFORM=DEV_VM"
-]
+### 9. Building Dobby inside vagrant.
+```
+cd ~/srcDobby/build
+cmake ../
+make
+sudo make install
+```
+
+### 10. Setting up a server with python to host containers
+```
+sudo python3 -m http.server 8080
+
+```
+
+### 11. Clean up any installed containers.
+```
+rm -rf ~/destination/*
+
+```
+
+
+### 12. Run inside vagrant DSM with Dobby and rbus
+```
+vagrant ssh
+sudo DobbyDaemon --nofork
+#with rbus we also need
+vagrant ssh
+killall -9 rtrouted;rm -fr /tmp/rtroute*;rtrouted -f -l DEBUG
+```
+In he next terminal start dsm:
+```
+vagrant ssh
+dsm
+
+```
+### 13 Setup usp inside vagrant
+
+* We also need start processes section 12 above and this section start as well.
+```
+vagrant ssh
+obuspa -i enp0s8
+vagrant ssh
+obuspa -c show datamodel | grep SoftwareModules
+```
+
+### 14. Deployment containers via rbus:
+
+* DSM rbus provider implements installDU() with URL (mandatory) and name (optional default is "default")
+
+* start processes see section 12 above.
+
+```
+rbuscli method_values "Device.SoftwareModules.InstallDU()" URL string http://${SERVER_IP}:8080/example_container.tar 
+```
+ExecutionEnvRef string test
+* check state of example_container via
+
+Check container gets deployed .
+ls -al ~destination/
+
+```
+rbuscli getvalues "Device.SoftwareModules.ExecutionUnit."
+```
+  It will show status Idle.
+* start example_container container dsmcli eu.start <eu_id>
+* check state of example_container via
+
+```
+rbuscli getvalues "Device.SoftwareModules.ExecutionUnit."
+```
+  It will show status Active.
+* dsmcli eu.detail <eu_id> will show status Active.
+* sudo DobbyTool list will show container example_container running.
+* Stop example_container container dsmcli eu.stop <eu_id>
+* check state of example_container via rbuscli getvalues "Device.SoftwareModules.ExecutionUnit." It will show status Idle
+
+### 15. Deployment containers via usp:
+
+* start processes see section 13 above.
+
+```
+obuspa -c operate "Device.SoftwareModules.InstallDU(ExecutionEnvRef=test,UUID=sleepy,URL=http://${SERVER_IP}:8080/example_container.tar)"
+```
+ExecutionEnvRef string test
+* check state of example_container via
+
+Check container gets deployed .
+ls -al ~destination/
+
+```
+obuspa -c get Device.SoftwareModules.DeploymentUnit.
+```
+  It will show status Idle.
+* start example_container container dsmcli eu.start <eu_id>
+* check state of example_container via
+
+```
+obuspa -c get Device.SoftwareModules.ExecutionUnit.
+```
+  It will show status Active.
+* dsmcli eu.detail <eu_id> will show status Active.
+* sudo DobbyTool list will show container example_container running.
+* Stop example_container container dsmcli eu.stop <eu_id>
+* check state of example_container via obuspa -c get Device.SoftwareModules.ExecutionUnit.." It will show status Idle
+
+
+
+### 16. Set EU Active and Idle state via rbus:
+
+DSM's functions start/stop available over RBUS SetRequestedState
+```
+rbuscli method_values "Device.SoftwareModules.ExecutionUnit.1.SetRequestedState()" RequestedState string Active
+#above line is equivalent to dsmcli eu.start <eu_id>
+rbuscli method_values "Device.SoftwareModules.ExecutionUnit.1.SetRequestedState()" RequestedState string Idle
+#above line is equivalent to dsmcli eu.stop <eu_id>
+```
+
+### 17. Set EU Active and Idle state via usp:
+
+DSM's functions start/stop available over USP SetRequestedState
+```
+obuspa -c operate "Device.SoftwareModules.ExecutionUnit.1.SetRequestedState(RequestedState=Active)"
+#above line is equivalent to dsmcli eu.start <eu_id>
+obuspa -c operate "Device.SoftwareModules.ExecutionUnit.1.SetRequestedState(RequestedState=Idle)"
+#above line is equivalent to dsmcli eu.stop <eu_id>
+```
+
+### 18. DSM du.uninstall available over RBUS as well.
+
+
+Check via rbus
+```
+rbuscli getvalues "Device.SoftwareModules.DeploymentUnit."
+```
+Uninstall via rbus
+```
+rbuscli method_noargs "Device.SoftwareModules.DeploymentUnit.1.Uninstall()"
+```
+Check , It will show empty.
+```
+rbuscli getvalues "Device.SoftwareModules.DeploymentUnit."
+```
+
+### 19. DSM du.uninstall available over USP as well.
+
+
+Check via usp
+```
+obuspa -c get Device.SoftwareModules.DeploymentUnit.
+```
+Uninstall via rbus
+```
+obuspa -c operate "Device.SoftwareModules.DeploymentUnit.1.Uninstall()"
+```
+Check , It will show empty.
+```
+obuspa -c get Device.SoftwareModules.DeploymentUnit.
 ```
