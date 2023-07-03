@@ -40,7 +40,7 @@ else()
     endif()
 endif(ENABLE_STATIC_ANALYSIS)
 
-set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD 17)
 
 FILE(GLOB SRC "./*.cpp")
 FILE(GLOB HEADERS "./*.h")
