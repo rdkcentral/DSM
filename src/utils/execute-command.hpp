@@ -21,6 +21,7 @@
 
 #include <tuple>
 #include <string>
+#include <stdexcept>
 
 auto execute_command(std::string command) -> std::tuple<int, std::string>;
 
