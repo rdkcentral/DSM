@@ -97,8 +97,7 @@ Vagrant.configure("2") do |config|
 
 	config.vm.provision "shell", privileged: false, inline: <<-SHELL
 		figlet CRUN  # ASCII banner
-                cd ~
-                if [ ! -d "~/crun" ]; then
+                if [ ! -d ~/crun ]; then
                   git clone -b 1.6 --depth 1 https://github.com/containers/crun.git ~/crun
                 fi
                 cd ~/crun
@@ -185,12 +184,12 @@ Vagrant.configure("2") do |config|
 
 	config.vm.provision "shell", privileged: false, inline: <<-SHELL
 		figlet RBUS  # ASCII banner
-                if [ ! -d "~/rbus" ]; then 
+                if [ ! -d ~/rbus ]; then 
                   git clone https://github.com/rdkcentral/rbus.git ~/rbus
                 fi
                 cd ~/rbus
                 git pull
-		# git checkout 0cf86c64449fec87a89a841c43becbb9a509876f
+                git checkout 6ad750d92d0999e02aa0463350405f56101960f1
 		cmake -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_FOR_DESKTOP=ON -DCMAKE_BUILD_TYPE=Debug
 		make -j$(nproc)
 		sudo make install -j$(nproc)
@@ -201,11 +200,10 @@ Vagrant.configure("2") do |config|
 		figlet DSM-RBUS  # ASCII banner
 		# Build Dsm
 		mkdir -p ~/srcDsm
-		cd ~/srcDsm
-                if [ ! -d "~/srcDsm/DSM" ]; then
-                  git clone --depth 1 git@github.com:rdkcentral/DSM.git
+                if [ ! -d ~/srcDsm/DSM ]; then
+                  git clone --depth 1 git@github.com:rdkcentral/DSM.git ~/srcDsm/DSM
                 fi
-		cd DSM
+		cd ~/srcDsm/DSM
                 git pull
 		mkdir -p build
 		cd build
@@ -242,8 +240,8 @@ Vagrant.configure("2") do |config|
                 mkdir -p ~/srcUsp
                 cd ~/srcUsp
                 DIR=~/srcUsp/obuspa
-                if [ ! -d "$DIR" ]; then
-                  git clone -b v6.0.0-master --depth 1 git@github.com:BroadbandForum/obuspa.git $DIR
+                if [ ! -d ~/srcUsp/obuspa ]; then
+                  git clone -b v6.0.0-master --depth 1 git@github.com:BroadbandForum/obuspa.git ~/srcUsp/obuspa
                 fi 
                 cd obuspa
                 git pull
