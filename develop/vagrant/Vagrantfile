@@ -1,4 +1,5 @@
-# If not stated otherwise in this file or this component's LICENSE file the
+#
+#If not stated otherwise in this file or this component's LICENSE file the
 # following copyright and licenses apply:
 #
 # Copyright 2022 Consult Red
@@ -42,6 +43,8 @@ Vagrant.configure("2") do |config|
         vb.memory = "4096"  # Change this to reduce the amount of RAM assigned to the VM
         vb.cpus = "6"       # Change this to reduce the amount of cores assigned to the VM
         vb.customize ["modifyvm", :id, "--ioapic", "on", "--vram", "100", "--graphicscontroller", "vmsvga", "--audio", "none"]
+	vb.customize ["modifyvm", :id, "--usb", "on"]
+        vb.customize ["modifyvm", :id, "--usbehci", "on"]
     end
 
     ##################################################
@@ -241,7 +244,7 @@ Vagrant.configure("2") do |config|
                 cd ~/srcUsp
                 DIR=~/srcUsp/obuspa
                 if [ ! -d ~/srcUsp/obuspa ]; then
-                  git clone -b v6.0.0-master --depth 1 git@github.com:BroadbandForum/obuspa.git ~/srcUsp/obuspa
+                  git clone -b v7.0.0-master --depth 1 git@github.com:BroadbandForum/obuspa.git ~/srcUsp/obuspa
                 fi 
                 cd obuspa
                 git pull
