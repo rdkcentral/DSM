@@ -67,7 +67,7 @@ rbusError_t rbus_table::addRow(UNUSED_CHECK rbusHandle_t handle,char const* tabl
 
             //add any subtables for this table
             for (auto i : table->template_sub_table){
-                table->sub_tables[index].insert({i.second.table_name,i.second});
+                table->sub_tables[index].insert(std::pair<string, char>(i.second.table_name,i.second);
             }
             return (rbusError_t::RBUS_ERROR_SUCCESS);
         }
