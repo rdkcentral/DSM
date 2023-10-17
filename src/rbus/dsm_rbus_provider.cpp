@@ -347,7 +347,11 @@ void dsm_rbus_provider::stateChangeHandler(UNUSED_CHECK rbusHandle_t handle, rbu
 
    rbusDateTime_t end_time {};
    time_t now = time(nullptr);
-   rbusValue_MarshallTMtoRBUS(&end_time, std::gmtime(&now));
+   // This copy can be removed when UnMarshall sets invalue to be a const
+   rbusDateTime_t tmp_copy = *tmp; 
+   struct tm val_as_tm;
+   rbusValue_UnMarshallRBUStoTM(&val_as_tm, &tmp_copy);
+   strftime(num_str, sizeof(num_str), "%Y-%m-%dT%H:%M:%SZ", &val_as_tm);
 
    rbusValue_SetTime(completeTime,&end_time);
 
