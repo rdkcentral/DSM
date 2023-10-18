@@ -1,0 +1,23 @@
+diff --git a/recipes-containers/dsm/files/lcm_rbus_datamodel.c b/recipes-containers/dsm/files/lcm_rbus_datamodel.c
+index 764ee7b..b2c8297 100644
+--- a/recipes-containers/dsm/files/lcm_rbus_datamodel.c
++++ b/recipes-containers/dsm/files/lcm_rbus_datamodel.c
+@@ -19,6 +19,7 @@
+ #include <inttypes.h>
+ 
+ #include <rbus.h>
++#include <rbus_value.h>
+ 
+ #if __STDC_VERSION__ >= 201112L
+ #define STATIC_ASSERT(_cond,_str) _Static_assert(_cond,_str)
+@@ -160,7 +161,9 @@ static void LCM_Translate_Event(__attribute((unused)) rbusHandle_t handle, rbusE
+                 {
+                     //format time to a string ( as USP event args in obuspa are all char *) according to iso 8601
+                     //re-use the num_str buffer, max size of this string should also be 20(1970-01-01T00:00:00Z)+1(null), so its fine.
+-                    strftime(num_str, sizeof(num_str), "%Y-%m-%dT%H:%M:%SZ", &tmp->m_time);
++		    struct tm time;
++		    rbusValue_UnMarshallRBUStoTM(&time, tmp);
++                    strftime(num_str, sizeof(num_str), "%Y-%m-%dT%H:%M:%SZ", &time);
+                     ptr = num_str;
+                 }
+                 break;
