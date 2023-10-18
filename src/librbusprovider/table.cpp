@@ -20,6 +20,7 @@
 #include <string.h>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 using namespace rbus_callback_tables;
 using namespace utility_functions;

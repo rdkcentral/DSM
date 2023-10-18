@@ -1,4 +1,3 @@
-
 #If not stated otherwise in this file or this component's LICENSE file the
 # following copyright and licenses apply:
 #
@@ -214,10 +213,12 @@ Vagrant.configure("2") do |config|
 		figlet DSM-RBUS  # ASCII banner
 		# Build Dsm
 		mkdir -p ~/srcDsm
-                if [ ! -d ~/srcDsm/DSM ]; then
-                  git clone --depth 1 git@github.com:rdkcentral/DSM.git ~/srcDsm/DSM
-                fi
-		cd ~/srcDsm/DSM
+                cp ../../../DSM DSM
+
+                #if [ ! -d ~/srcDsm/DSM ]; then
+                  #git clone --depth 1 git@github.com:rdkcentral/DSM.git ~/srcDsm/DSM
+                #fi
+                cd DSM
                 git pull
 		mkdir -p build
 		cd build
@@ -234,6 +235,7 @@ Vagrant.configure("2") do |config|
 		cp /home/vagrant/srcDsm/DSM/src/dsm.config /home/vagrant/dsm.config
 		
 		echo 'export DSM_CONFIG_FILE=/home/vagrant/dsm.config' >> /home/vagrant/.bash_profile
+                false
 		
 	SHELL
 
@@ -266,10 +268,11 @@ Vagrant.configure("2") do |config|
 		figlet USP-dac  # ASCII banner
 		cd ~/srcUsp/obuspa
 		
-		cp /home/vagrant/meta-rdk/recipes-containers/dsm/files/lcm_rbus_datamodel.c src/vendor/lcm_rbus_datamodel.c
 		patch -p1 -N < /home/vagrant/patches/obuspa/vendor.c.patch
 		patch -p1 -N < /home/vagrant/patches/obuspa/vendor.am.patch
+                cd ~/meta-rdk
                 patch -p1 -N < /home/vagrant/patches/lcm_rbus.patch
+		cp /home/vagrant/meta-rdk/recipes-containers/dsm/files/lcm_rbus_datamodel.c ~/srcUsp/obuspa/src/vendor/lcm_rbus_datamodel.c
                 echo $?
                 echo "THIS IS A LINE"
 		
@@ -283,7 +286,7 @@ Vagrant.configure("2") do |config|
 		
 		autoreconf --force --install
 		./configure
-		makek
+		make
 		sudo make install
 	SHELL
 

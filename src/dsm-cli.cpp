@@ -257,9 +257,14 @@ nlohmann::json build_command(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-   auto command = build_command(argc - 1, argv + 1);
-   // SocketClient socket{"./command.socket"};
-   SocketClient socket{"command.socket"};
+	if (for local file) {
+		SocketClient socket{"command.socket"};
+	else (check for file at root) {
+		SocketClient socket{"./command.socket"};
+	} else {
+		Throw useful message now
+	}
+	
 
    std::cout << "Command: " << command << std::endl;
    auto response = socket.execute_command(command);

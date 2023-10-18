@@ -18,6 +18,7 @@
 #include "rbus_macros.h"
 #include "provider.h"
 #include <vector>
+#include <string>
 
 #ifndef _DEVICESM_RBUS_TABLE_H
 #define _DEVICESM_RBUS_TABLE_H
@@ -69,3 +70,4 @@ public:
 };
 
 #endif
+
