@@ -35,11 +35,11 @@ Vagrant.configure("2") do |config|
     config.vm.hostname = "lcm-vagrant-focal"
     config.vm.define "lcm-vagrant-focal"
 
-    config.vm.network "public_network", bridge: "#$default_network_interface"
+ "public_network", bridge: "#$default_network_interface"
 
     config.vagrant.plugins = "vagrant-disksize"
     config.vagrant.plugins = "vagrant-vbguest"
-    config.disksize.size = '25GB'
+    config.disksize.size = '50GB'
 
     config.vm.provider "virtualbox" do |vb|
         vb.memory = "4096"  # Change this to reduce the amount of RAM assigned to the VM
@@ -213,17 +213,16 @@ Vagrant.configure("2") do |config|
 		figlet DSM-RBUS  # ASCII banner
 		# Build Dsm
 		mkdir -p ~/srcDsm
-                cp ../../../DSM DSM
-
-                #if [ ! -d ~/srcDsm/DSM ]; then
-                  #git clone --depth 1 git@github.com:rdkcentral/DSM.git ~/srcDsm/DSM
-                #fi
-                cd DSM
+                if [ ! -d ~/srcDsm/DSM ]; then
+                  git clone --depth 1 git@github.com:rdkcentral/DSM.git ~/srcDsm/DSM
+                fi
+                cd ~/srcDsm/DSM
                 git pull
 		mkdir -p build
 		cd build
-                cmake .. -D ENABLE_RBUS_PROVIDER=ON
+                cmake ~/srcDsm/DSM -D ENABLE_RBUS_PROVIDER=ON
 		make -j$(nproc)
+                echo "Make Install"
 		sudo make install
 		# TODO for now use the file in srcDsm.
 		# could have a custom one in our vagrant repo that sets up nicely for the VM
@@ -235,8 +234,6 @@ Vagrant.configure("2") do |config|
 		cp /home/vagrant/srcDsm/DSM/src/dsm.config /home/vagrant/dsm.config
 		
 		echo 'export DSM_CONFIG_FILE=/home/vagrant/dsm.config' >> /home/vagrant/.bash_profile
-                false
-		
 	SHELL
 
 	config.vm.provision "shell", privileged: false, inline: <<-SHELL
@@ -264,18 +261,13 @@ Vagrant.configure("2") do |config|
 
 
 	config.vm.provision "shell", privileged: false, inline: <<-SHELL
-		
 		figlet USP-dac  # ASCII banner
 		cd ~/srcUsp/obuspa
-		
 		patch -p1 -N < /home/vagrant/patches/obuspa/vendor.c.patch
 		patch -p1 -N < /home/vagrant/patches/obuspa/vendor.am.patch
                 cd ~/meta-rdk
                 patch -p1 -N < /home/vagrant/patches/lcm_rbus.patch
 		cp /home/vagrant/meta-rdk/recipes-containers/dsm/files/lcm_rbus_datamodel.c ~/srcUsp/obuspa/src/vendor/lcm_rbus_datamodel.c
-                echo $?
-                echo "THIS IS A LINE"
-		
 	SHELL
 
 
