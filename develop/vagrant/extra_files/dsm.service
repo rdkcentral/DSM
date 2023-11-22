@@ -8,6 +8,6 @@ Group=vagrant
 ExecStart=/usr/local/bin/dsm
 WorkingDirectory=/home/vagrant
 Restart=no
-Environment="DSM_CONFIG_FILE=/etc/dsm.config"
+Environment="DSM_CONFIG_FILE=/home/vagrant/dsm.config"
 [Install]
 WantedBy=multi-user.target
