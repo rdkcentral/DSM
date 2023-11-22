@@ -35,14 +35,14 @@ Vagrant.configure("2") do |config|
     config.vm.hostname = "lcm-vagrant-focal"
     config.vm.define "lcm-vagrant-focal"
 
- "public_network", bridge: "#$default_network_interface"
+    config.vm.network "public_network", bridge: "#$default_network_interface"
 
     config.vagrant.plugins = "vagrant-disksize"
     config.vagrant.plugins = "vagrant-vbguest"
     config.disksize.size = '50GB'
 
     config.vm.provider "virtualbox" do |vb|
-        vb.memory = "4096"  # Change this to reduce the amount of RAM assigned to the VM
+        vb.memory = "2048"  # Change this to reduce the amount of RAM assigned to the VM
         vb.cpus = "6"       # Change this to reduce the amount of cores assigned to the VM
         vb.customize ["modifyvm", :id, "--ioapic", "on", "--vram", "100", "--graphicscontroller", "vmsvga", "--audio", "none"]
 	vb.customize ["modifyvm", :id, "--usb", "on"]
@@ -69,8 +69,13 @@ Vagrant.configure("2") do |config|
         ssh-keyscan -Ht ecdsa github.com >> ~/.ssh/known_hosts
     SHELL
 
-
-
+    # Copy in DSM from host machine
+    config.vm.provision "shell", privileged: false, inline: <<-SHELL
+        mkdir -p ~/srcDSM/DSM
+    SHELL
+    config.vm.provision "file", source: "../../src", destination: "$HOME/srcDsm/DSM/src"
+    config.vm.provision "file", source: "../../CMakeFiles", destination: "$HOME/srcDsm/DSM/CMakeFiles"
+    config.vm.provision "file", source: "../../CMakeLists.txt", destination: "$HOME/srcDsm/DSM/CMakeLists.txt"
 
 	config.vm.provision "shell", inline: <<-SHELL
 		apt-get update -y && apt-get upgrade -y
@@ -107,6 +112,32 @@ Vagrant.configure("2") do |config|
 		apt-get install -y libmosquitto-dev libwebsockets-dev
 	SHELL
 
+	config.vm.provision "shell", privileged: false, inline: <<-SHELL
+		figlet DSM-RBUS  # ASCII banner
+		# Build Dsm
+		# mkdir -p ~/srcDsm
+                # if [ ! -d ~/srcDsm/DSM ]; then
+                  # git clone --depth 1 git@github.com:rdkcentral/DSM.git ~/srcDsm/DSM
+                # fi
+                cd ~/srcDsm/DSM
+                # git pull
+		mkdir -p build
+		cd build
+                cmake ~/srcDsm/DSM -D ENABLE_RBUS_PROVIDER=ON
+		make -j$(nproc)
+                echo "Make Install"
+		sudo make install
+		# TODO for now use the file in srcDsm.
+		# could have a custom one in our vagrant repo that sets up nicely for the VM
+		# config.vm.provision "file", source: ".dsm-config", destination: ".dsm-config"
+		# to go inside the Vagrant.configure("2") do |config| section above
+		
+		mkdir -p /home/vagrant/destination
+		mkdir -p /home/vagrant/repo
+		cp /home/vagrant/srcDsm/DSM/src/dsm.config /home/vagrant/dsm.config
+		
+		echo 'export DSM_CONFIG_FILE=/home/vagrant/dsm.config' >> /home/vagrant/.bash_profile
+	SHELL
 
 	config.vm.provision "shell", privileged: false, inline: <<-SHELL
 		figlet CRUN  # ASCII banner
@@ -209,32 +240,6 @@ Vagrant.configure("2") do |config|
 	SHELL
 
 
-	config.vm.provision "shell", privileged: false, inline: <<-SHELL
-		figlet DSM-RBUS  # ASCII banner
-		# Build Dsm
-		mkdir -p ~/srcDsm
-                if [ ! -d ~/srcDsm/DSM ]; then
-                  git clone --depth 1 git@github.com:rdkcentral/DSM.git ~/srcDsm/DSM
-                fi
-                cd ~/srcDsm/DSM
-                git pull
-		mkdir -p build
-		cd build
-                cmake ~/srcDsm/DSM -D ENABLE_RBUS_PROVIDER=ON
-		make -j$(nproc)
-                echo "Make Install"
-		sudo make install
-		# TODO for now use the file in srcDsm.
-		# could have a custom one in our vagrant repo that sets up nicely for the VM
-		# config.vm.provision "file", source: ".dsm-config", destination: ".dsm-config"
-		# to go inside the Vagrant.configure("2") do |config| section above
-		
-		mkdir -p /home/vagrant/destination
-		mkdir -p /home/vagrant/repo
-		cp /home/vagrant/srcDsm/DSM/src/dsm.config /home/vagrant/dsm.config
-		
-		echo 'export DSM_CONFIG_FILE=/home/vagrant/dsm.config' >> /home/vagrant/.bash_profile
-	SHELL
 
 	config.vm.provision "shell", privileged: false, inline: <<-SHELL
 		figlet meta-rdk-setup  # ASCII banner
@@ -273,15 +278,19 @@ Vagrant.configure("2") do |config|
 
 	config.vm.provision "shell", privileged: false, inline: <<-SHELL
 		figlet USP  # ASCII banner
-		
 		cd ~/srcUsp/obuspa
-		
 		autoreconf --force --install
 		./configure
 		make
 		sudo make install
 	SHELL
 
+	config.vm.provision "shell", privileged: false, inline: <<-SHELL
+		figlet "Service files"  # ASCII banner
+                sudo cp ~/Dobby/daemon/process/dobby.service  /etc/systemd/system/multi-user.target.wants/
+                sudo cp ~/rbus/conf/rbus.service              /etc/systemd/system/multi-user.target.wants/
+                sudo cp ~/extra_files/dsm.service             /etc/systemd/system/multi-user.target.wants/
+	SHELL
 
 	config.vm.provision "shell", privileged: false, inline: <<-SHELL
 		figlet DONE
