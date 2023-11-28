@@ -22,6 +22,7 @@
 #include <map>
 #include <cstdint>
 #include <thread>
+#include <string>
 #include "rbus_macros.h"
 #include "table.h"
 

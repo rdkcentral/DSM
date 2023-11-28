@@ -1,0 +1,13 @@
+[Unit]
+Description=Broadband DAC (DSM)
+After=dobby.service rbus.service network.target
+[Service]
+Type=simple
+User=vagrant
+Group=vagrant
+ExecStart=/usr/local/bin/dsm
+WorkingDirectory=/home/vagrant
+Restart=no
+Environment="DSM_CONFIG_FILE=/home/vagrant/dsm.config"
+[Install]
+WantedBy=multi-user.target

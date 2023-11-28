@@ -347,8 +347,8 @@ void dsm_rbus_provider::stateChangeHandler(UNUSED_CHECK rbusHandle_t handle, rbu
 
    rbusDateTime_t end_time {};
    time_t now = time(nullptr);
-   rbusValue_MarshallTMtoRBUS(&end_time, std::gmtime(&now));
 
+   rbusValue_MarshallTMtoRBUS(&end_time, std::gmtime(&now));
    rbusValue_SetTime(completeTime,&end_time);
 
    if(field.compare("Status")==0) {

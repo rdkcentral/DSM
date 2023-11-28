@@ -1,0 +1,6 @@
+develop/vagrant/.vagrant
+CMakeFiles/
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+develop/**/*log

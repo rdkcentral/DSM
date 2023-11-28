@@ -1,5 +1,3 @@
-
-// If not stated otherwise in this file or this component's license file the
 // following copyright and licenses apply:
 //
 // Copyright 2022 Consult Red
@@ -17,20 +15,20 @@
 // limitations under the License.
 
 #include "execute-command.hpp"
+#include <string>
+#include <array>
 
 auto execute_command(std::string command) -> std::tuple<int, std::string>{
-    const unsigned int bufferSize = 256;    
     std::string ret_content;
 
-    std::array<char, bufferSize> buffer;
+    std::array<char, 256> buffer;
     
-
     auto pipe = popen(command.c_str(), "r");
 
     if (!pipe) throw std::runtime_error("popen() failed!");
 
     while (!feof(pipe)) {
-        if (fgets(buffer.data(), bufferSize, pipe) != nullptr)
+        if (fgets(buffer.data(), buffer.size(), pipe) != nullptr)
             ret_content += buffer.data();
     }
 

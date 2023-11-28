@@ -1,4 +1,4 @@
-// If not stated otherwise in this file or this component's license file the
+//  ot stated oth in this fi rhs component's license file the
 // following copyright and licenses apply:
 //
 // Copyright 2022 Consult Red
@@ -18,6 +18,7 @@
 #include "rbus_macros.h"
 #include "provider.h"
 #include <vector>
+#include <string>
 
 #ifndef _DEVICESM_RBUS_TABLE_H
 #define _DEVICESM_RBUS_TABLE_H
@@ -69,3 +70,4 @@ public:
 };
 
 #endif
+
