@@ -186,7 +186,9 @@ void PackagerAdapter::configure(nlohmann::json config) {
    this->config = config;
    std::string destination_path {config["destination"]};
    if (!path_exists(destination_path)){
-      throw std::invalid_argument(std::string("Destination path doesn't exist: ")+destination_path);
+      if(!create_directory(destination_path))
+         throw std::invalid_argument(std::string("Destination path doesn't exist and unable to create directory: ")+destination_path);
+
    }
 }
 

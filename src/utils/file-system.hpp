@@ -22,5 +22,6 @@
 #include <string>
 
 auto path_exists(const std::string path) -> bool;
+auto create_directory(const std::string path) ->bool;
 
 #endif

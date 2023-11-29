@@ -20,9 +20,15 @@
 
 #include <sys/stat.h>
 #include <stdio.h>
+#include <filesystem>
 
 auto path_exists(const std::string path) -> bool{
     struct stat buffer;
 
   return (stat (path.c_str(), &buffer) == 0);
 }
+auto create_directory(const std::string path) -> bool{
+  
+    return std::filesystem::create_directory(path);
+}
+
