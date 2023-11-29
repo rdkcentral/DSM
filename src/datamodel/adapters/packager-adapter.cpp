@@ -272,7 +272,18 @@ auto PackagerAdapter::install(std::shared_ptr<PackageData> package,std::string i
       // Move to install (Note download errors not handled!)
       auto package_status = save_package_config(dest, id, uri, "installing");
 
-      package->path = dest+localUri.substr(0, localUri.length()-4); // Assumes .tar --- FIXME
+      size_t lastindex;
+
+      if (localUri.find(".tar.gz") != std::string::npos)
+      {
+         lastindex = localUri.length() - 7; 
+      }
+      else
+      {
+         lastindex = localUri.find_last_of(".");
+      }
+
+      package->path = dest+localUri.substr(0, lastindex); 
 
       package_status = save_package_config(dest, id, uri, "installed", package->path,localUri);
 
