@@ -248,7 +248,7 @@ auto PackagerAdapter::install(std::shared_ptr<PackageData> package,std::string i
    std::cout << "   config=" << config << std::endl;
 
    auto package_config = load_package_config(dest, id);
-   if (!package_config["state"].is_null() && package_config["state"]!="uninstalled"){
+   if ((!package_config["state"].is_null() && package_config["state"]!="uninstalled")&& package_config["exec"]){
       std::cout << "    INSTALL ERROR: Package has been installed and is not unistalled."<<std::endl;
       return package_config;
    }
@@ -323,7 +323,7 @@ auto PackagerAdapter::uninstall(std::string id) -> nlohmann::json {
 auto PackagerAdapter::is_installed(std::string id) -> bool{
    auto dest = std::string(config["destination"]) + "/";
    auto package_config = load_package_config(dest, id);
-   return ! (package_config["state"].is_null() || package_config["state"]=="uninstalled");
+   return (!(package_config["state"].is_null() || package_config["state"]=="uninstalled") && package_config["exec"]);
 }
 
 auto PackagerAdapter::list() -> nlohmann::json {
