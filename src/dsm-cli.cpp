@@ -256,10 +256,35 @@ nlohmann::json build_command(int argc, char **argv) {
    return command_factory[argv[0]](argc - 1, argv + 1);
 }
 
+auto get_command_file()
+{
+   const char *configFile;
+   configFile = std::getenv("DSM_CONFIG_FILE");
+   if (configFile == nullptr)
+   {
+      configFile = "../../src/dsm.config";
+   }
+   std::ifstream file(configFile);
+   nlohmann::json config;
+   std::string command_socket_filename = "";
+   if (file.fail()) {
+     std::cout << "  Error 'no such file' : DSMCLI load_config" << configFile
+                << std::endl;
+   }
+   else {
+
+      file >> config;
+      command_socket_filename = config["CommandServer"]["domain-socket"];
+      std::cout << "  DSMCLI Loaded command.socket file from : " << command_socket_filename << std::endl;
+   }
+   return command_socket_filename;
+}
+
+
 int main(int argc, char **argv) {
    auto command = build_command(argc - 1, argv + 1);
    // SocketClient socket{"./command.socket"};
-   SocketClient socket{"./command.socket"};
+   SocketClient socket{get_command_file()};
 
    std::cout << "Command: " << command << std::endl;
    auto response = socket.execute_command(command);
