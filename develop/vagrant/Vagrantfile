@@ -32,8 +32,8 @@ Vagrant.configure("2") do |config|
     #
     config.vm.box = "ubuntu/lunar64"
 
-    config.vm.hostname = "lcm-vagrant-focal"
-    config.vm.define "lcm-vagrant-focal"
+    config.vm.hostname = "dsm-vagrant-lunar"
+    config.vm.define "dsm-vagrant-lunar"
 
     config.vm.network "public_network", bridge: "#$default_network_interface"
 
@@ -71,12 +71,9 @@ Vagrant.configure("2") do |config|
     SHELL
 
     # Copy in DSM from host machine
-    config.vm.provision "shell", privileged: false, inline: <<-SHELL
-        mkdir -p ~/srcDSM/DSM
-    SHELL
-    config.vm.provision "file", source: "../../src", destination: "$HOME/srcDsm/DSM/src"
-    config.vm.provision "file", source: "../../CMakeFiles", destination: "$HOME/srcDsm/DSM/CMakeFiles"
-    config.vm.provision "file", source: "../../CMakeLists.txt", destination: "$HOME/srcDsm/DSM/CMakeLists.txt"
+    # uncomment the section below to copy DSM source files from your host
+    # config.vm.provision "file", source: "../../src", destination: "$HOME/srcDsm/DSM/src"
+    # config.vm.provision "file", source: "../../CMakeLists.txt", destination: "$HOME/srcDsm/DSM/CMakeLists.txt"
 
 	config.vm.provision "shell", inline: <<-SHELL
 		apt-get update -y && apt-get upgrade -y
@@ -111,33 +108,6 @@ Vagrant.configure("2") do |config|
 		apt-add-repository -y ppa:mosquitto-dev/mosquitto-ppa
 		apt-get update
 		apt-get install -y libmosquitto-dev libwebsockets-dev
-	SHELL
-
-	config.vm.provision "shell", privileged: false, inline: <<-SHELL
-		figlet DSM-RBUS  # ASCII banner
-		# Build Dsm
-		# mkdir -p ~/srcDsm
-                # if [ ! -d ~/srcDsm/DSM ]; then
-                  # git clone --depth 1 git@github.com:rdkcentral/DSM.git ~/srcDsm/DSM
-                # fi
-                cd ~/srcDsm/DSM
-                # git pull
-		mkdir -p build
-		cd build
-                cmake ~/srcDsm/DSM -D ENABLE_RBUS_PROVIDER=ON
-		make -j$(nproc)
-                echo "Make Install"
-		sudo make install
-		# TODO for now use the file in srcDsm.
-		# could have a custom one in our vagrant repo that sets up nicely for the VM
-		# config.vm.provision "file", source: ".dsm-config", destination: ".dsm-config"
-		# to go inside the Vagrant.configure("2") do |config| section above
-		
-		mkdir -p /home/vagrant/destination
-		mkdir -p /home/vagrant/repo
-		cp /home/vagrant/srcDsm/DSM/src/dsm.config /home/vagrant/dsm.config
-		
-		echo 'export DSM_CONFIG_FILE=/home/vagrant/dsm.config' >> /home/vagrant/.bash_profile
 	SHELL
 
 	config.vm.provision "shell", privileged: false, inline: <<-SHELL
@@ -240,6 +210,35 @@ Vagrant.configure("2") do |config|
 		sudo make install -j$(nproc)
 	SHELL
 
+
+	config.vm.provision "shell", privileged: false, inline: <<-SHELL
+		figlet DSM-RBUS  # ASCII banner
+		# Build Dsm
+		if [ ! -d ~/srcDsm/DSM ]; then
+			mkdir -p ~/srcDsm
+			git clone --depth 1 git@github.com:rdkcentral/DSM.git ~/srcDsm/DSM
+		fi
+		cd ~/srcDsm/DSM
+		if [ -d ".git" ]; then
+			git pull
+		fi
+		mkdir -p build
+		cd build
+		cmake ~/srcDsm/DSM -D ENABLE_RBUS_PROVIDER=ON
+		make -j$(nproc)
+		echo "Make Install"
+		sudo make install
+		# TODO for now use the file in srcDsm.
+		# could have a custom one in our vagrant repo that sets up nicely for the VM
+		# config.vm.provision "file", source: ".dsm-config", destination: ".dsm-config"
+		# to go inside the Vagrant.configure("2") do |config| section above
+
+		mkdir -p /home/vagrant/destination
+		mkdir -p /home/vagrant/repo
+		cp /home/vagrant/srcDsm/DSM/src/dsm.config /home/vagrant/dsm.config
+
+		echo 'export DSM_CONFIG_FILE=/home/vagrant/dsm.config' >> /home/vagrant/.bash_profile
+	SHELL
 
 
 	config.vm.provision "shell", privileged: false, inline: <<-SHELL
