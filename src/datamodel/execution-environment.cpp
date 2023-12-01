@@ -46,7 +46,7 @@ auto ExecutionEnvironment::current_runlevel() const -> int { return config["Curr
 
 auto ExecutionEnvironment::install(std::string uri) -> std::shared_ptr<DeploymentUnit> {   
    auto package = packager->find_package(uri);
-   if (package != nullptr && package->state != Packager::Uninstalled){
+   if (package != nullptr && package->state != Packager::Uninstalled && package->is_executable){
       std::cout << "   EE: Install: Package already installed" << std::endl;
       return nullptr;
    }
