@@ -28,6 +28,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <optional>
 #include <ftw.h>
 
 
@@ -38,6 +39,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <filesystem>
 
 bool is_http(std::string uri)
 {
@@ -108,8 +110,20 @@ std::string convertToLocalUri(std::string uri)
          std::cout << "Converted to local " << localUri << std::endl;
       }
    }
-
    return localUri;
+}
+
+// Removes .tar or .tar.gz from the end of filename
+// Return None if invalid suffix
+std::optional<std::string> strip_tar_ext(std::string filename) {
+	auto len = filename.length();
+	if (filename.find(".tar.gz") != std::string::npos){
+		return filename.substr(0, len - 7);
+	}
+	if (filename.find(".tar") != std::string::npos){
+		return filename.substr(0, len - 4);
+	}
+	return std::nullopt;
 }
 
 auto load_package_config (std::string dest, std::string id) -> nlohmann::json{
@@ -205,10 +219,21 @@ void PackagerAdapter::wget_callback_success(std::shared_ptr<PackageData> package
      std::cout << "Delete file=" << delete_file_command.c_str() << std::endl;
    };
 
+   std::string containerName = convertToLocalUri(localUri);
+   std::optional<std::string> stripped_filename = strip_tar_ext(containerName);
+   if (stripped_filename.has_value()) {
+	   containerName = stripped_filename.value();
+   } else {
+	   //TODO Improve Error handling
+	   std::cout << "Install Error: couldn't extract this file type" << std::endl;
+	   return;
+   }
+   std::filesystem::create_directory(dest + containerName);
+
    std::string arg1 = "-xf";
    std::string arg2 = dest + localUri;
    std::string arg3 = "-C";
-   std::string arg4 = dest;
+   std::string arg4 = dest + containerName;
 
    char * argv_list[] = {(char*)"tar",(char*)arg1.c_str(),(char*)arg2.c_str(),
                         (char*)arg3.c_str(), (char*)arg4.c_str(), NULL};
@@ -253,45 +278,34 @@ auto PackagerAdapter::install(std::shared_ptr<PackageData> package,std::string i
       return package_config;
    }
 
+   //TODO
    // Package may be local file or come via http (should add https also). Replace code with support class!
    // Replace use of wget with libcurl or similar (curlpp)
 
    // DOWNLOAD
    
-   if (is_http(uri)) // Http Download
-   {
-      localUri = convertToLocalUri(uri);
- 
-      save_package_config(dest, id, uri, "downloading");
-
-      // Fix path of package here
-      
-
-      fork_exe_wget(package, id, uri, dest, localUri);
-
-      // Move to install (Note download errors not handled!)
-      auto package_status = save_package_config(dest, id, uri, "installing");
-
-      size_t lastindex;
-
-      if (localUri.find(".tar.gz") != std::string::npos)
-      {
-         lastindex = localUri.length() - 7; 
-      }
-      else
-      {
-         lastindex = localUri.find_last_of(".");
-      }
-
-      package->path = dest+localUri.substr(0, lastindex); 
-
-      package_status = save_package_config(dest, id, uri, "installed", package->path,localUri);
-
-
-      return package_status;
+   if (!is_http(uri)) { // HTTP Download
+      std::cout << "    INSTALL ERROR: Local install not implemented, please use http"<<std::endl;
+      //TODO Improve error handling to not return half completed config file.
+      return package_config;
    }
+   localUri = convertToLocalUri(uri);
+   save_package_config(dest, id, uri, "downloading");
+   fork_exe_wget(package, id, uri, dest, localUri);
+   //TODO Fix Download Errors
+   // Move to install (Note download errors not handled!)
+   auto package_status = save_package_config(dest, id, uri, "installing");
 
-   return package_config;
+   std::optional<std::string> filename = strip_tar_ext(localUri);
+   if (!filename.has_value()) {
+      //TODO Improve error handling to not return half completed config file.
+      std::cout << "Install Error: Invalid archive type must be '.tar' or '.tar.gz' but have file " << 
+	 localUri << std::endl;
+      return package_config;
+   }
+   package->path = dest+filename.value();
+   package_status = save_package_config(dest, id, uri, "installed", package->path,localUri);
+   return package_status;
 }
 
 static int ftw_callback(const char *path, const struct stat *sb, int flag, struct FTW *buf){
