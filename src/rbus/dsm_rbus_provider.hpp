@@ -39,7 +39,7 @@ public:
 
 private:
    static bool isValidURL(std::string url);
-   rbusCallbackTable_t local_method_table = {nullptr,nullptr,nullptr,nullptr,nullptr,dsm_rbus_provider::methodHandler};
+   rbusCallbackTable_t local_method_table = {nullptr,nullptr,nullptr,nullptr,nullptr,reinterpret_cast<void*>(dsm_rbus_provider::methodHandler)};
    
    static rbusError_t methodHandler(rbusHandle_t handle, char const* methodName, rbusObject_t inParams, rbusObject_t outParams, rbusMethodAsyncHandle_t asyncHandle);
    static void stateChangeHandler(rbusHandle_t handle, rbusEvent_t const* event,rbusEventSubscription_t* subscription);
