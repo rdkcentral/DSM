@@ -219,10 +219,21 @@ void PackagerAdapter::wget_callback_success(std::shared_ptr<PackageData> package
      std::cout << "Delete file=" << delete_file_command.c_str() << std::endl;
    };
 
+   std::string containerName = convertToLocalUri(localUri);
+   std::optional<std::string> stripped_filename = strip_tar_ext(containerName);
+   if (stripped_filename.has_value()) {
+	   containerName = stripped_filename.value();
+   } else {
+	   //TODO Improve Error handling
+	   std::cout << "Install Error: couldn't extract this file type" << std::endl;
+	   return;
+   }
+   std::filesystem::create_directory(dest + containerName);
+
    std::string arg1 = "-xf";
    std::string arg2 = dest + localUri;
    std::string arg3 = "-C";
-   std::string arg4 = dest;
+   std::string arg4 = dest + containerName;
 
    char * argv_list[] = {(char*)"tar",(char*)arg1.c_str(),(char*)arg2.c_str(),
                         (char*)arg3.c_str(), (char*)arg4.c_str(), NULL};
