@@ -85,7 +85,7 @@ namespace rbus_callback_tables{
     constexpr rbusCallbackTable_t rbus_table_generic_read_write {rbus_table::tableGetHandler,rbus_table::tableSetHandler,nullptr            ,nullptr                ,nullptr                        ,nullptr};
     constexpr rbusCallbackTable_t rbus_table_generic_read_only  {rbus_table::tableGetHandler,nullptr                    ,nullptr            ,nullptr                ,nullptr                        ,nullptr};
     //constexpr rbusCallbackTable_t rbus_generic_method           {nullptr                    ,nullptr                    ,nullptr            ,nullptr                ,nullptr                        ,rbus_provider::methodHandler};
-    constexpr rbusCallbackTable_t rbus_table_generic_method     {nullptr                    ,nullptr                    ,nullptr            ,nullptr                ,nullptr                        ,rbus_table::tableMethodHandler};
+    const rbusCallbackTable_t rbus_table_generic_method     {nullptr                    ,nullptr                    ,nullptr            ,nullptr                ,nullptr                        ,reinterpret_cast<void*>(&rbus_table::tableMethodHandler)};
     constexpr rbusCallbackTable_t rbus_event                    {nullptr                    ,nullptr                    ,nullptr            ,nullptr                ,rbus_provider::eventSubHandler,nullptr};
 }
 #endif
