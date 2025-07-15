@@ -178,14 +178,49 @@ auto delete_package_config (std::string dest, std::string id, std::string uri, s
    package_data["id"] = id;
    package_data["uri"] = uri;
    package_data["state"] = state;
-   
    if (path.length() > 0)
    {
-      auto file_name = path + ".tar.json";
-      bool file_exist = path_exists(file_name);
-      if (file_exist)
+      // Try .tar.gz.json first
+      auto file_name_gz = path + ".tar.gz.json";
+      std::cout << "Checking for .tar.gz.json file: " << file_name_gz << std::endl;
+      bool file_exist_gz = path_exists(file_name_gz);
+      if (file_exist_gz)
       {
-         remove(file_name.c_str());
+         std::cout << "Deleting .tar.gz.json file: " << file_name_gz << std::endl;
+         int result = remove(file_name_gz.c_str());
+         if (result == 0)
+         {
+            std::cout << "Successfully deleted .tar.gz.json file" << std::endl;
+         }
+         else
+         {
+            std::cout << "Failed to delete .tar.gz.json file" << std::endl;
+         }
+      }
+      else
+      {
+         std::cout << ".tar.gz.json file not found, checking for .tar.json" << std::endl;
+         // If .tar.gz.json doesn't exist, try .tar.json
+         auto file_name_tar = path + ".tar.json";
+         std::cout << "Checking for .tar.json file: " << file_name_tar << std::endl;
+         bool file_exist_tar = path_exists(file_name_tar);
+         if (file_exist_tar)
+         {
+            std::cout << "Deleting .tar.json file: " << file_name_tar << std::endl;
+            int result = remove(file_name_tar.c_str());
+            if (result == 0)
+            {
+               std::cout << "Successfully deleted .tar.json file" << std::endl;
+            }
+            else
+            {
+               std::cout << "Failed to delete .tar.json file" << std::endl;
+            }
+         }
+         else
+         {
+            std::cout << "No config file found (.tar.json or .tar.gz.json)" << std::endl;
+         }
       }
    }
    return package_data;
